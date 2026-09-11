@@ -1,0 +1,36 @@
+---
+// Central place for all per-page SEO tags. Every page renders this once,
+// through Layout.astro, by passing title/description (and optionally image/type).
+export interface Props {
+  title: string;
+  description: string;
+  /** Path to a 1200x630 image in /public, e.g. "/og-image.jpg". Omit if you don't have one yet. */
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
+  /** Set true on pages you don't want indexed (drafts, thank-you pages, etc). */
+  noindex?: boolean;
+}
+
+const { title, description, image, type = 'website', noindex = false } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = image ? new URL(image, Astro.site) : undefined;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph (Facebook, LinkedIn, Slack unfurls, etc.) -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+{imageURL && <meta property="og:image" content={imageURL} />}
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content={imageURL ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{imageURL && <meta name="twitter:image" content={imageURL} />}

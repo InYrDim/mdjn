@@ -1,0 +1,24 @@
+---
+const links = [
+  { href: '/#work', label: 'Work' },
+  { href: '/about', label: 'About' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+
+<header class="border-b border-line">
+  <div class="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
+    <a href="/" class="font-display text-xl">
+      InYrDim
+    </a>
+    <nav class="flex gap-6 text-sm">
+      {
+        links.map((link) => (
+          <a href={link.href} class="text-ink/80 transition-colors hover:text-accent">
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
