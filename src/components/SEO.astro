@@ -1,6 +1,8 @@
 ---
-// Central place for all per-page SEO tags. Every page renders this once,
-// through Layout.astro, by passing title/description (and optionally image/type).
+// Central place for all per-page SEO tags: title, description, canonical URL,
+// hreflang alternates for the other locale, Open Graph, and Twitter Cards.
+import { translatePath, type Lang } from '../i18n/utils';
+
 export interface Props {
   title: string;
   description: string;
@@ -9,12 +11,28 @@ export interface Props {
   type?: 'website' | 'article' | 'profile';
   /** Set true on pages you don't want indexed (drafts, thank-you pages, etc). */
   noindex?: boolean;
+  lang?: Lang;
+  /** Canonical, locale-agnostic path used to build hreflang alternates: "/", "/about", "/projects/fokus". */
+  path?: string;
 }
 
-const { title, description, image, type = 'website', noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  image,
+  type = 'website',
+  noindex = false,
+  lang = 'en',
+  path = '/',
+} = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const imageURL = image ? new URL(image, Astro.site) : undefined;
+
+// Keep this in sync with astro.config.mjs -> i18n.locales
+const ogLocales = { en: 'en_US', id: 'id_ID' } as const;
+const allLangs = Object.keys(ogLocales) as Lang[];
+const alternateLangs = allLangs.filter((l) => l !== lang);
 ---
 
 <title>{title}</title>
@@ -22,11 +40,18 @@ const imageURL = image ? new URL(image, Astro.site) : undefined;
 <link rel="canonical" href={canonicalURL} />
 {noindex && <meta name="robots" content="noindex, nofollow" />}
 
+<!-- Tell search engines this page has versions in other languages, so they're
+     treated as translations of each other rather than duplicate content. -->
+{allLangs.map((l) => <link rel="alternate" hreflang={l} href={new URL(translatePath(path, l), Astro.site)} />)}
+<link rel="alternate" hreflang="x-default" href={new URL(translatePath(path, 'en'), Astro.site)} />
+
 <!-- Open Graph (Facebook, LinkedIn, Slack unfurls, etc.) -->
 <meta property="og:type" content={type} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
+<meta property="og:locale" content={ogLocales[lang]} />
+{alternateLangs.map((l) => <meta property="og:locale:alternate" content={ogLocales[l]} />)}
 {imageURL && <meta property="og:image" content={imageURL} />}
 
 <!-- Twitter / X -->

@@ -1,24 +1,58 @@
 ---
-const links = [
-  { href: '/#work', label: 'Work' },
-  { href: '/about', label: 'About' },
-  { href: '/#contact', label: 'Contact' },
+import { useTranslations, translatePath, type Lang } from '../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+  /** Canonical, locale-agnostic path of the current page — the switcher links to this same page in the other language. */
+  path?: string;
+}
+
+const { lang, path = '/' } = Astro.props;
+const t = useTranslations(lang);
+const tp = (p: string) => translatePath(p, lang);
+
+const navItems = [
+  { href: '/#work', key: 'nav.work' },
+  { href: '/about', key: 'nav.about' },
+  { href: '/#contact', key: 'nav.contact' },
+] as const;
+
+const switcher = [
+  { code: 'en' as const, label: 'EN' },
+  { code: 'id' as const, label: 'ID' },
 ];
 ---
 
 <header class="border-b border-line">
   <div class="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-    <a href="/" class="font-display text-xl">
+    <a href={tp('/')} class="font-display text-xl">
       InYrDim
     </a>
-    <nav class="flex gap-6 text-sm">
+    <nav class="flex items-center gap-6 text-sm">
       {
-        links.map((link) => (
-          <a href={link.href} class="text-ink/80 transition-colors hover:text-accent">
-            {link.label}
+        navItems.map((item) => (
+          <a href={tp(item.href)} class="text-ink/80 transition-colors hover:text-accent">
+            {t(item.key)}
           </a>
         ))
       }
+      <span class="h-4 w-px bg-line" aria-hidden="true"></span>
+      <div class="flex items-center gap-2">
+        {
+          switcher.map((s, i) => (
+            <>
+              {i > 0 && <span class="text-line">/</span>}
+              <a
+                href={translatePath(path, s.code)}
+                class:list={['transition-colors hover:text-accent', lang === s.code ? 'text-ink' : 'text-muted']}
+                aria-current={lang === s.code ? 'true' : undefined}
+              >
+                {s.label}
+              </a>
+            </>
+          ))
+        }
+      </div>
     </nav>
   </div>
 </header>

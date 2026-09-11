@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+  project: {
+    slug: string;
+    title: string;
+    stack: string[];
+    url: string;
+    repo: string;
+    en: { year: string; role: string; description: string; content: string; urlLabel: string };
+    id: { year: string; role: string; description: string; content: string; urlLabel: string };
+  };
+}
+
+const { lang, project } = Astro.props;
+const p = project[lang];
+const t = useTranslations(lang);
+const tp = useTranslatedPath(lang);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: project.title,
+  description: p.description,
+  dateCreated: p.year,
+  inLanguage: lang,
+  url: new URL(tp(`/projects/${project.slug}`), Astro.site).toString(),
+  creator: {
+    '@type': 'Person',
+    name: 'Muh. Dimas Januardi Nur',
+  },
+};
+---
+
+<Layout
+  title={`${project.title} — Muh. Dimas Januardi Nur`}
+  description={p.description}
+  type="article"
+  lang={lang}
+  path={`/projects/${project.slug}`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+    <a href={tp('/#work')} class="text-sm text-muted hover:text-accent">
+      {t('project.back')}
+    </a>
+
+    <h1 class="mt-6 font-display text-4xl sm:text-5xl">{project.title}</h1>
+
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted">
+      <span>{p.year}</span>
+      <span class="h-3 w-px bg-line" aria-hidden="true"></span>
+      <span>{p.role}</span>
+    </div>
+
+    <ul class="mt-4 flex flex-wrap gap-2">
+      {project.stack.map((tech) => (
+        <li class="rounded-full border border-line px-3 py-1 text-xs text-muted">{tech}</li>
+      ))}
+    </ul>
+
+    <p class="mt-8 text-lg leading-relaxed text-ink/80">{p.description}</p>
+    <p class="mt-6 max-w-[65ch] leading-relaxed text-ink/80">{p.content}</p>
+
+    <div class="mt-10 flex gap-6 text-sm">
+      {project.url && (
+        <a href={project.url} class="text-accent underline decoration-line hover:decoration-accent">
+          {p.urlLabel}
+        </a>
+      )}
+      {project.repo && (
+        <a href={project.repo} class="text-accent underline decoration-line hover:decoration-accent">
+          {t('project.viewSource')}
+        </a>
+      )}
+    </div>
+  </article>
+</Layout>

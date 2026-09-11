@@ -1,10 +1,18 @@
 ---
+import { useTranslations, type Lang } from '../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
 const year = new Date().getFullYear();
 ---
 
 <footer class="border-t border-line">
   <div class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-6 py-10 text-sm text-muted">
-    <p>© {year} Muh. Dimas Januardi Nur. Built with Astro.</p>
+    <p>© {year} Muh. Dimas Januardi Nur. {t('footer.built')}</p>
     <div class="flex gap-5">
       <a href="mailto:muhdimasjanuardinur@gmail.com" class="hover:text-accent">Email</a>
       <a href="https://github.com/InYrDim" class="hover:text-accent">GitHub</a>

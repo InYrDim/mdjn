@@ -3,6 +3,7 @@ import SEO from '../components/SEO.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import '../styles/global.css';
+import type { Lang } from '../i18n/utils';
 
 export interface Props {
   title: string;
@@ -10,13 +11,16 @@ export interface Props {
   image?: string;
   type?: 'website' | 'article' | 'profile';
   noindex?: boolean;
+  lang?: Lang;
+  /** Canonical, locale-agnostic path for this page: "/", "/about", "/projects/fokus". Powers hreflang + the language switcher. */
+  path?: string;
 }
 
-const { title, description, image, type, noindex } = Astro.props;
+const { title, description, image, type, noindex, lang = 'en', path = '/' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,14 +34,14 @@ const { title, description, image, type, noindex } = Astro.props;
       rel="stylesheet"
     />
 
-    <SEO title={title} description={description} image={image} type={type} noindex={noindex} />
+    <SEO title={title} description={description} image={image} type={type} noindex={noindex} lang={lang} path={path} />
     <slot name="head" />
   </head>
   <body class="bg-paper font-sans text-ink antialiased">
-    <SiteHeader />
+    <SiteHeader lang={lang} path={path} />
     <main>
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter lang={lang} />
   </body>
 </html>

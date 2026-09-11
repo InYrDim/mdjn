@@ -1,0 +1,16 @@
+---
+import ProjectPage from '../../../components/views/ProjectPage.astro';
+import { projects } from '../../../data/projects.js';
+
+// One static page per project at build time, in Indonesian.
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+---
+
+<ProjectPage lang="id" project={project} />

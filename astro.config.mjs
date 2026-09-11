@@ -6,15 +6,35 @@ import sitemap from '@astrojs/sitemap';
 // IMPORTANT: replace with your real production domain before deploying.
 // Astro needs this to generate correct canonical URLs, Open Graph tags,
 // and the sitemap.xml file that Google/Bing crawl.
-const SITE_URL = 'https://mdjn.my.id';
+const SITE_URL = 'https://yourdomain.com';
 
 // https://astro.build/config
 export default defineConfig({
   site: SITE_URL,
 
+  // English is the default locale and stays unprefixed at "/".
+  // Indonesian lives under "/id/". See src/i18n/ for the translation dictionary.
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'id'],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },
 
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: {
+          en: 'en-US',
+          id: 'id-ID',
+        },
+      },
+    }),
+  ],
 });

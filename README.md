@@ -53,6 +53,40 @@ public/
 └── robots.txt
 ```
 
+## Internationalization (i18n)
+
+The site ships in English (default, unprefixed at `/`) and Indonesian
+(`/id/`), using Astro's native i18n routing.
+
+```
+src/i18n/
+├── ui.ts       # every UI string, keyed by locale — edit copy here
+└── utils.ts    # useTranslations(lang), translatePath(path, lang)
+```
+
+- **Page content** (hero copy, nav labels, about bio, footer) comes from
+  `t('some.key')` via `useTranslations(lang)`.
+- **Project copy** (title stays shared; description/content/role/year are
+  per-locale) lives directly in `src/data/projects.js` under `en`/`id` keys
+  on each project object.
+- **Routing**: each route has a thin file per locale — `src/pages/about.astro`
+  (English) and `src/pages/id/about.astro` (Indonesian) — that both render
+  the same shared component from `src/components/views/`, just with a
+  different `lang` prop. Add a new page once in `views/`, then two ~3-line
+  route files.
+- **hreflang tags, `og:locale`, and the sitemap's language alternates** are
+  generated automatically by `SEO.astro` and `@astrojs/sitemap` — nothing to
+  maintain by hand as long as every page passes a `path` prop to `Layout`.
+
+### Adding a third language
+
+1. Add the locale code to `astro.config.mjs` (`i18n.locales` and the
+   sitemap's `i18n.locales` map).
+2. Add a matching block to `src/i18n/ui.ts`.
+3. Add an `<code>` key to every project in `src/data/projects.js`.
+4. Duplicate `src/pages/id/` as `src/pages/<code>/`, changing `lang="id"` to
+   `lang="<code>"` in each file.
+
 ## How the SEO pieces fit together
 
 - **Static output** — Astro renders every route to plain HTML at build time

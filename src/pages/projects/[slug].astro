@@ -1,9 +1,8 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import ProjectPage from '../../components/views/ProjectPage.astro';
 import { projects } from '../../data/projects.js';
 
-// Astro generates one static HTML page per project at build time —
-// this is what makes every case study crawlable and fast, with no client JS required.
+// One static page per project at build time, in English.
 export function getStaticPaths() {
   return projects.map((project) => ({
     params: { slug: project.slug },
@@ -12,55 +11,6 @@ export function getStaticPaths() {
 }
 
 const { project } = Astro.props;
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'CreativeWork',
-  name: project.title,
-  description: project.description,
-  dateCreated: project.year,
-  url: new URL(`/projects/${project.slug}`, Astro.site).toString(),
-  creator: {
-    '@type': 'Person',
-    name: 'Muh. Dimas Januardi Nur',
-  },
-};
 ---
 
-<Layout title={`${project.title} — Muh. Dimas Januardi Nur`} description={project.description} type="article">
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-  <article class="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-    <a href="/#work" class="text-sm text-muted hover:text-accent">← Back to work</a>
-
-    <h1 class="mt-6 font-display text-4xl sm:text-5xl">{project.title}</h1>
-
-    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted">
-      <span>{project.year}</span>
-      <span class="h-3 w-px bg-line" aria-hidden="true"></span>
-      <span>{project.role}</span>
-    </div>
-
-    <ul class="mt-4 flex flex-wrap gap-2">
-      {project.stack.map((tech) => (
-        <li class="rounded-full border border-line px-3 py-1 text-xs text-muted">{tech}</li>
-      ))}
-    </ul>
-
-    <p class="mt-8 text-lg leading-relaxed text-ink/80">{project.description}</p>
-    <p class="mt-6 max-w-[65ch] leading-relaxed text-ink/80">{project.content}</p>
-
-    <div class="mt-10 flex gap-6 text-sm">
-      {project.url && (
-        <a href={project.url} class="text-accent underline decoration-line hover:decoration-accent">
-          {project.urlLabel || 'Visit live site'}
-        </a>
-      )}
-      {project.repo && (
-        <a href={project.repo} class="text-accent underline decoration-line hover:decoration-accent">
-          View source
-        </a>
-      )}
-    </div>
-  </article>
-</Layout>
+<ProjectPage lang="en" project={project} />
