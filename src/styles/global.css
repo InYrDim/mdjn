@@ -1,16 +1,57 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Design tokens — swap these to re-skin the whole site from one place. */
-@theme {
-  --color-paper: #faf9f6;
-  --color-ink: #17181c;
-  --color-muted: #6b6f76;
-  --color-accent: #2451e0;
-  --color-line: #e1dfd9;
+/* Dark mode is driven by the data-theme attribute (set pre-paint in Layout),
+   so the `dark:` variant follows the manual toggle, not just the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+/* Dual-theme Shiki: Shiki inlines the light palette and attaches the dark
+   palette as --shiki-dark vars per span. We neutralize the inline light
+   background (!important beats the style attribute) so blocks sit directly
+   on the page surface, and swap span colors under [data-theme="dark"]. */
+.astro-code {
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  background-color: transparent !important;
+}
+
+[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+}
+
+/*
+  Quiet Technical design system.
+  Neutrals are cool zinc. One accent (blue), used identically everywhere.
+  Radius scale: 4px for buttons, inputs, chips; 0 for everything else.
+  Dark mode swaps the same tokens under [data-theme="dark"]; no pure black/white.
+*/
+@theme {
+  --color-paper: #fafafa;
+  --color-ink: #18181b;
+  --color-muted: #6f6f77;
+  --color-line: #e4e4e7;
+  --color-accent: #3056d3;
+
+  --font-display: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", monospace;
+}
+
+[data-theme="dark"] {
+  --color-paper: #131316;
+  --color-ink: #ececee;
+  --color-muted: #94949c;
+  --color-line: #2c2c31;
+  --color-accent: #7d9aff;
+}
+
+:root {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @layer base {
@@ -18,9 +59,27 @@
     scroll-behavior: smooth;
   }
 
+  /* Geist display discipline: tightened tracking replaces the old serif display. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+  }
+
   body {
     background-color: var(--color-paper);
     color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    body,
+    a,
+    button {
+      transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+    }
   }
 
   ::selection {
@@ -32,9 +91,21 @@
     text-underline-offset: 3px;
   }
 
+  /* Tactile press feedback on every interactive element. */
+  a:active,
+  button:active {
+    transform: translateY(0.5px);
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+  }
+
+  /* Numbers and code snippets read best in mono — Quiet Technical signature. */
+  time {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
   }
 }
 

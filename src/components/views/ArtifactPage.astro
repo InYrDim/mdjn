@@ -1,0 +1,190 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+  entry: CollectionEntry<'artifacts'>;
+}
+
+const { lang, entry } = Astro.props;
+const { Content } = await render(entry);
+const t = useTranslations(lang);
+const tp = useTranslatedPath(lang);
+
+const slug = entry.id.split('/').pop();
+
+// Which locales actually have an artifact at this slug — used so hreflang only
+// ever points at pages that exist. Same convention as blog posts.
+const allArtifacts = await getCollection('artifacts', ({ data }) => !data.draft);
+const availableLangs = allArtifacts
+  .filter((a) => a.id.split('/').pop() === slug)
+  .map((a) => a.data.lang);
+
+const isExternal = entry.data.url ? /^https?:\/\//.test(entry.data.url) : false;
+
+const dateFormatter = new Intl.DateTimeFormat(lang === 'id' ? 'id-ID' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': ['CreativeWork', 'MediaObject'],
+  name: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.pubDate.toISOString(),
+  dateModified: (entry.data.updatedDate ?? entry.data.pubDate).toISOString(),
+  inLanguage: lang,
+  url: new URL(tp(`/artifacts/${slug}`), Astro.site).toString(),
+  ...(entry.data.url ? { contentUrl: new URL(entry.data.url, Astro.site).toString() } : {}),
+  ...(entry.data.size ? { fileSize: entry.data.size } : {}),
+  author: {
+    '@type': 'Person',
+    name: 'Muh. Dimas Januardi Nur',
+  },
+};
+---
+
+<Layout
+  title={`${entry.data.title} - Muh. Dimas Januardi Nur`}
+  description={entry.data.description}
+  lang={lang}
+  path={`/artifacts/${slug}`}
+  availableLangs={availableLangs}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article
+    class="mx-auto max-w-3xl px-6 py-16 sm:py-20"
+    data-copy-label={t('artifacts.copy')}
+    data-copied-label={t('artifacts.copied')}
+  >
+    <a href={tp('/artifacts')} class="text-sm text-muted hover:text-accent">
+      {t('artifacts.back')}
+    </a>
+
+    <h1 class="mt-6 font-display text-4xl sm:text-5xl">{entry.data.title}</h1>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
+      <span class="rounded-sm bg-ink/[0.06] px-2.5 py-1 font-medium text-ink/80">
+        {t(`artifact.type.${entry.data.type}`)}
+      </span>
+      {entry.data.size && (
+        <>
+          <span class="h-3 w-px bg-line" aria-hidden="true" />
+          <span>
+            {t('artifacts.sizeLabel')}: {entry.data.size}
+          </span>
+        </>
+      )}
+      <span class="h-3 w-px bg-line" aria-hidden="true" />
+      <time datetime={entry.data.pubDate.toISOString()}>{dateFormatter.format(entry.data.pubDate)}</time>
+      {
+        entry.data.updatedDate && (
+          <>
+            <span class="h-3 w-px bg-line" aria-hidden="true" />
+            <span>
+              {t('artifacts.updated')}{' '}
+              <time datetime={entry.data.updatedDate.toISOString()}>
+                {dateFormatter.format(entry.data.updatedDate)}
+              </time>
+            </span>
+          </>
+        )
+      }
+    </div>
+
+    {
+      entry.data.tags.length > 0 && (
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {entry.data.tags.map((tag) => (
+            <li class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted">{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      entry.data.url && (
+        <div class="mt-8">
+          {isExternal ? (
+            <a
+              href={entry.data.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
+            >
+              {t('artifacts.visitLink')}
+              <span aria-hidden="true">↗</span>
+            </a>
+          ) : (
+            <a
+              href={entry.data.url}
+              download
+              class="inline-flex items-center gap-2 rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
+            >
+              {t('artifacts.download')}
+              <span aria-hidden="true">↓</span>
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    <div class="prose prose-neutral mt-10 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-ink">
+      <Content />
+    </div>
+  </article>
+</Layout>
+
+<script>
+  // Copy buttons on every code block. Bound once per <pre> (idempotent, so
+  // re-running after Astro view-transition swaps is safe). The button label
+  // is set from the page language via data attributes on <body>.
+  function setupCopyButtons() {
+    const scope = document.querySelector<HTMLElement>('[data-copy-label]');
+    const copyLabel = scope?.dataset.copyLabel ?? 'Copy';
+    const copiedLabel = scope?.dataset.copiedLabel ?? 'Copied!';
+
+    document.querySelectorAll('.astro-code').forEach((pre) => {
+      if (pre.dataset.copyBound === 'true') return;
+      pre.dataset.copyBound = 'true';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className =
+        'copy-code absolute right-2 top-2 rounded-sm border border-line bg-paper px-2.5 py-1 text-xs text-muted opacity-0 transition-opacity focus-visible:opacity-100 hover:border-accent hover:text-ink';
+      button.textContent = copyLabel;
+      button.setAttribute('aria-label', copyLabel);
+
+      button.addEventListener('click', () => {
+        const code = pre.querySelector('code')?.textContent ?? '';
+        navigator.clipboard.writeText(code).then(() => {
+          button.textContent = copiedLabel;
+          button.classList.add('text-accent');
+          window.setTimeout(() => {
+            button.textContent = copyLabel;
+            button.classList.remove('text-accent');
+          }, 2000);
+        });
+      });
+
+      pre.classList.add('relative', 'group');
+      pre.appendChild(button);
+    });
+  }
+
+  setupCopyButtons();
+  document.addEventListener('astro:page-load', setupCopyButtons);
+</script>
+
+<style is:global>
+  /* Show the copy button on hover/focus of the code block. */
+  .astro-code:hover .copy-code,
+  .astro-code:focus-within .copy-code {
+    opacity: 1;
+  }
+</style>
