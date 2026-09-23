@@ -1,0 +1,250 @@
+---
+// Floating share control, rendered once in Layout so every page gets it:
+// copy the page link, show a scannable QR code, or hand off to the OS share
+// sheet where the platform supports it.
+//
+// - Open/close uses the native Popover API (light dismiss + ESC for free,
+//   works even without JS).
+// - The QR is encoded at BUILD time from the canonical page URL and inlined
+//   as SVG, so it costs zero client JS and is always there. QR colors are
+//   fixed dark-on-light in both themes — inverted QRs scan unreliably.
+// - Fallback: when the page is actually served from a different origin/path
+//   than the canonical URL (localhost preview, staging mirror, placeholder
+//   domain), the script re-syncs the QR, copy target, and visible URL to the
+//   live window.location.href. uqr is lazily imported only when that
+//   difference is detected, so normal visitors download no extra JS.
+// - The small hoisted script only handles copy feedback and revealing the
+//   native-share button; it's idempotent and re-binds on astro:page-load so
+//   it keeps working across Astro View Transitions (same pattern as
+//   SiteHeader).
+//
+// Icons: Phosphor "share-network" + "x" (regular), MIT — phosphoricons.com.
+// Paths come from the installed @phosphor-icons/web package (1024-unit grid,
+// y-down, same orientation as the official 256-grid SVGs).
+import { encode } from 'uqr';
+import { useTranslations, type Lang } from '../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+  /** Canonical absolute URL of the page — encoded into the QR + copy button. */
+  url: string;
+}
+
+const { lang, url } = Astro.props;
+const t = useTranslations(lang);
+
+// data[y][x]: outer array = rows top→bottom, inner = columns left→right.
+const { data, size } = encode(url, { ecc: 'M', border: 0 });
+let rects = '';
+for (let y = 0; y < size; y++) {
+  for (let x = 0; x < size; x++) {
+    if (data[y][x]) rects += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  }
+}
+const qrSvg = `<svg viewBox="0 0 ${size} ${size}" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true" style="display:block;width:100%;height:auto">${rects}</svg>`;
+---
+
+<div class="fixed bottom-6 right-6 z-40 print:hidden">
+  <button
+    type="button"
+    class="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-line bg-paper/90 text-ink/70 backdrop-blur-sm transition-colors hover:border-accent hover:text-accent"
+    popovertarget="share-popover"
+    aria-label={t('share.label')}
+    title={t('share.label')}
+  >
+    <svg width="18" height="18" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+      <path
+        d="M704 320c-0.015 0-0.033 0-0.051 0-44.864 0-85.403-18.516-114.393-48.323l-0.036-0.037-184.4 118.52c6.885 17.148 10.879 37.027 10.879 57.84s-3.994 40.692-11.257 58.915l0.378-1.075 184.4 118.52c29.083-29.771 69.63-48.232 114.49-48.232 88.366 0 160 71.634 160 160s-71.634 160-160 160c-88.366 0-160-71.634-160-160 0-20.856 3.99-40.779 11.249-59.049l-0.379 1.081-184.4-118.52c-29.094 29.847-69.692 48.36-114.615 48.36-88.366 0-160-71.634-160-160s71.634-160 160-160c44.922 0 85.521 18.513 114.582 48.326l0.033 0.034 184.4-118.52c-6.849-17.153-10.82-37.033-10.82-57.84 0-88.366 71.634-160 160-160s160 71.634 160 160c0 88.366-71.634 160-160 160-0.021 0-0.042 0-0.063 0h0.003zM704 832c53.019 0 96-42.981 96-96s-42.981-96-96-96c-53.019 0-96 42.981-96 96v0c0 53.019 42.981 96 96 96v0zM256 352c-53.019 0-96 42.981-96 96s42.981 96 96 96c53.019 0 96-42.981 96-96v0c0-53.019-42.981-96-96-96v0zM704 64c-53.019 0-96 42.981-96 96s42.981 96 96 96c53.019 0 96-42.981 96-96v0c0-53.019-42.981-96-96-96v0z"
+      ></path>
+    </svg>
+  </button>
+</div>
+
+<div
+  id="share-popover"
+  popover="auto"
+  class="share-popover w-64 rounded-sm border border-line bg-paper p-4 text-ink shadow-xl shadow-ink/10"
+  data-url={url}
+  data-copy-label={t('share.copy')}
+  data-copied-label={t('share.copied')}
+>
+  <div class="flex items-center justify-between">
+    <p class="font-display text-sm font-medium">{t('share.title')}</p>
+    <button
+      type="button"
+      class="inline-flex h-6 w-6 items-center justify-center rounded-sm text-muted transition-colors hover:bg-ink/[0.06] hover:text-ink"
+      popovertarget="share-popover"
+      popovertargetaction="hide"
+      aria-label={t('share.close')}
+    >
+      <svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path
+          d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128l63.49,63.51Z"
+        ></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Fixed light surface + dark modules in both themes: scanners expect it. -->
+  <div class="share-qr mt-3 rounded-sm border border-line p-3">
+    <Fragment set:html={qrSvg} />
+  </div>
+  <p class="mt-2 text-center text-xs text-muted">{t('share.qr')}</p>
+
+  <code
+    class="mt-3 block truncate border border-line px-2 py-1.5 font-mono text-xs text-muted"
+    title={url}
+>{url}</code>
+
+  <div class="mt-3 flex gap-2">
+    <button
+      type="button"
+      autofocus
+      class="share-copy flex-1 rounded-sm bg-ink px-3 py-2 text-sm font-medium text-paper transition-colors hover:bg-accent"
+    >
+      {t('share.copy')}
+    </button>
+    <button
+      type="button"
+      class="share-native hidden flex-1 rounded-sm border border-line px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-accent hover:text-accent"
+    >
+      {t('share.title')}…
+    </button>
+  </div>
+</div>
+
+<style>
+  /* The popover renders in the top layer, where fixed positioning anchors to
+     the viewport — pin it just above the floating button. */
+  .share-popover {
+    position: fixed;
+    inset: auto;
+    bottom: calc(1.5rem + 2.5rem + 0.75rem);
+    right: 1.5rem;
+    margin: 0;
+  }
+
+  /* Deliberately NOT theme tokens: the QR must stay dark-on-light to scan
+     reliably, so pin the light-mode palette in both themes. */
+  .share-qr {
+    background-color: #fafafa;
+    color: #18181b;
+  }
+</style>
+
+<script>
+  function setupShare() {
+    const popover = document.getElementById('share-popover');
+    if (!popover || popover.dataset.shareBound === 'true') return;
+    popover.dataset.shareBound = 'true';
+
+    // Native share sheet only where the platform supports it.
+    if (typeof navigator.share === 'function') {
+      popover.querySelector('.share-native')?.classList.remove('hidden');
+    }
+
+    popover.addEventListener('toggle', (event) => {
+      if ((event as ToggleEvent).newState !== 'open') return;
+      // Reset copy feedback if a previous copy left the label swapped.
+      const copyButton = popover.querySelector<HTMLButtonElement>('.share-copy');
+      if (copyButton) {
+        copyButton.textContent = popover.dataset.copyLabel ?? copyButton.textContent;
+      }
+    });
+  }
+
+  async function copyPageLink(button: HTMLButtonElement) {
+    const popover = button.closest<HTMLElement>('#share-popover');
+    const copyLabel = popover?.dataset.copyLabel ?? 'Copy';
+    const copiedLabel = popover?.dataset.copiedLabel ?? 'Copied!';
+    try {
+      await navigator.clipboard.writeText(popover?.dataset.url ?? window.location.href);
+    } catch {
+      return; // Clipboard unavailable (permissions, private mode) — stay quiet.
+    }
+    button.textContent = copiedLabel;
+    button.classList.add('bg-accent');
+    window.setTimeout(() => {
+      button.textContent = copyLabel;
+      button.classList.remove('bg-accent');
+    }, 2000);
+  }
+
+  // Delegated clicks survive view-transition DOM swaps.
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    const copyButton = target.closest<HTMLButtonElement>('.share-copy');
+    if (copyButton) {
+      void copyPageLink(copyButton);
+      return;
+    }
+
+    const nativeButton = target.closest('.share-native');
+    if (nativeButton) {
+      const url = nativeButton.closest<HTMLElement>('#share-popover')?.dataset.url;
+      navigator.share?.({ url, title: document.title }).catch(() => {
+        /* user dismissed the sheet */
+      });
+    }
+  });
+
+  // Re-sync the share target with the URL actually open in the browser.
+  // Canonical stays authoritative in production; only a real origin/path
+  // difference (localhost, preview mirror) triggers the swap. Trailing
+  // slashes are normalized so static hosts serving "/blog/x/" don't
+  // false-positive against the canonical "/blog/x".
+  async function syncShareUrl() {
+    const popover = document.getElementById('share-popover');
+    const canonical = popover?.dataset.url;
+    if (!popover || !canonical) return;
+
+    const withoutTrailingSlash = (p: string) => p.replace(/\/+$/, '') || '/';
+    let canonicalUrl: URL;
+    try {
+      canonicalUrl = new URL(canonical);
+    } catch {
+      return;
+    }
+    const differs =
+      canonicalUrl.origin !== window.location.origin ||
+      withoutTrailingSlash(canonicalUrl.pathname) !== withoutTrailingSlash(window.location.pathname);
+    if (!differs || popover.dataset.syncedHref === window.location.href) return;
+
+    const live = window.location.href;
+    popover.dataset.url = live;
+    popover.dataset.syncedHref = live;
+    const code = popover.querySelector('code');
+    if (code) {
+      code.textContent = live;
+      code.title = live;
+    }
+
+    try {
+      // Lazily fetched only when the fallback is actually needed.
+      const { encode } = await import('uqr');
+      const { data, size } = encode(live, { ecc: 'M', border: 0 });
+      let rects = '';
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          if (data[y][x]) rects += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+        }
+      }
+      const qr = popover.querySelector('.share-qr');
+      if (qr) {
+        qr.innerHTML =
+          `<svg viewBox="0 0 ${size} ${size}" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true" style="display:block;width:100%;height:auto">${rects}</svg>`;
+      }
+    } catch {
+      /* Network/import failure — the build-time QR stays, still valid canonical. */
+    }
+  }
+
+  setupShare();
+  void syncShareUrl();
+  document.addEventListener('astro:page-load', () => {
+    setupShare();
+    void syncShareUrl();
+  });
+</script>

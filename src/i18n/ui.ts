@@ -53,6 +53,13 @@ export const ui = {
     'artifact.type.tool': 'Tool',
     'artifact.type.other': 'Other',
 
+    'share.label': 'Share this page',
+    'share.title': 'Share',
+    'share.copy': 'Copy link',
+    'share.copied': 'Copied!',
+    'share.qr': 'Scan to open this page',
+    'share.close': 'Close',
+
     'contact.heading': 'Get in touch',
     'contact.body': 'Best way to reach me is email. I read everything and reply within a couple of days.',
 
@@ -114,6 +121,13 @@ export const ui = {
     'artifact.type.cheatsheet': 'Cheatsheet',
     'artifact.type.tool': 'Tool',
     'artifact.type.other': 'Lainnya',
+
+    'share.label': 'Bagikan halaman ini',
+    'share.title': 'Bagikan',
+    'share.copy': 'Salin tautan',
+    'share.copied': 'Tersalin!',
+    'share.qr': 'Pindai untuk membuka halaman ini',
+    'share.close': 'Tutup',
 
     'contact.heading': 'Hubungi saya',
     'contact.body':
