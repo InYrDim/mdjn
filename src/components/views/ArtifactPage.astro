@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Mermaid from '../../components/Mermaid.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
 
@@ -137,6 +138,7 @@ const jsonLd = {
     <div class="prose prose-neutral mt-10 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-ink">
       <Content />
     </div>
+    <Mermaid contentSelector="article .prose" />
   </article>
 </Layout>
 
@@ -149,7 +151,7 @@ const jsonLd = {
     const copyLabel = scope?.dataset.copyLabel ?? 'Copy';
     const copiedLabel = scope?.dataset.copiedLabel ?? 'Copied!';
 
-    document.querySelectorAll('.astro-code').forEach((pre) => {
+    document.querySelectorAll('.astro-code:not(.mermaid-rendered)').forEach((pre) => {
       if (pre.dataset.copyBound === 'true') return;
       pre.dataset.copyBound = 'true';
 

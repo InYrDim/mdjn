@@ -1,0 +1,49 @@
+---
+// Renders ```mermaid code fences inside the page's markdown content as real
+// diagrams, client-side. The fence itself stays in the HTML (it's just a <pre>
+// like any other code other block), so the page works without JS and copy
+// buttons on regular code blocks keep working.
+//
+// Mount it on pages that render markdown collections:
+//   <Mermaid contentSelector="article .prose" />
+//
+// Notes:
+// - Astro runs `mermaid` fences through Shiki like any other language, so they
+//   come out as <pre class="astro-code" data-language="mermaid"> — that's how
+//   we find them.
+// - The Mermaid ESM bundle (~1MB) is imported dynamically in
+//   src/scripts/mermaid-render.ts, so it only loads on pages that actually
+//   have diagrams.
+// - Astro view transitions swap the DOM without a full reload; we re-run on
+//   `astro:page-load` which fires after every navigation and on first load.
+// - Mermaid renders in the current theme and re-renders on theme toggle
+//   (handled in mermaid-render.ts).
+interface Props {
+  /** CSS selector for the container that holds the markdown content. */
+  contentSelector: string;
+}
+const { contentSelector } = Astro.props;
+---
+
+<div class="mermaid-root hidden" data-mermaid-content-selector={contentSelector} aria-hidden="true"></div>
+
+<script>
+  // Kick off the (large) mermaid bundle download before first paint completes,
+  // so it is ready by astro:page-load and rendering measures with settled
+  // fonts/styles rather than mid-load ones.
+  import('../scripts/mermaid-render');
+
+  import { startObserving } from '../scripts/mermaid-render';
+
+  function boot() {
+    const root = document.querySelector<HTMLElement>('.mermaid-root');
+    if (!root) return;
+    const contentSelector = root.dataset.mermaidContentSelector;
+    if (!contentSelector) return;
+    startObserving({ contentSelector });
+  }
+
+  // astro:page-load fires on first load and after every view-transition
+  // navigation, so we always bind against the fresh DOM.
+  document.addEventListener('astro:page-load', boot);
+</script>
