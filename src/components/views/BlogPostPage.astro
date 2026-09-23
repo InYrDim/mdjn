@@ -43,7 +43,7 @@ const jsonLd = {
 ---
 
 <Layout
-  title={`${entry.data.title} — Muh. Dimas Januardi Nur`}
+  title={`${entry.data.title} - Muh. Dimas Januardi Nur`}
   description={entry.data.description}
   type="article"
   lang={lang}
@@ -67,7 +67,7 @@ const jsonLd = {
             <span class="h-3 w-px bg-line" aria-hidden="true" />
             <ul class="flex flex-wrap gap-2">
               {entry.data.tags.map((tag) => (
-                <li class="rounded-full border border-line px-3 py-1 text-xs text-muted">{tag}</li>
+                <li class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted">{tag}</li>
               ))}
             </ul>
           </>
@@ -75,7 +75,7 @@ const jsonLd = {
       }
     </div>
 
-    <div class="prose prose-slate mt-10 max-w-none prose-headings:font-display prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-ink">
+    <div class="prose prose-neutral mt-10 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-ink">
       <Content />
     </div>
   </article>

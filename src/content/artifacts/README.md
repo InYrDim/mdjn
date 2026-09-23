@@ -42,6 +42,9 @@ src/content/artifacts/
 | `updatedDate` | tanggal | — | Isi saat merevisi konten. |
 | `draft` | boolean | `false` | `true` = sembunyikan dari listing, sitemap & routing (mode draft). |
 
+> Kalau `updatedDate` diisi, halaman detail otomatis menampilkan "Diperbarui
+> <tanggal>" di sebelah tanggal terbit. Berguna untuk cheatsheet yang sering direvisi.
+
 ## 3. Aturan `url`
 
 | Jenis file | Cara host | Nilai `url` |
@@ -60,8 +63,17 @@ Aturan hard:
 
 ## 4. Body Markdown
 
-Bebas, dirender dengan typography penuh (`prose`). Konvensi yang disarankan
-untuk konsistensi antar-artifact:
+Bebas, dirender dengan typography penuh (`prose`). **Yang otomatis aktif di
+halaman detail, tanpa perlu melakukan apa pun di markdown:**
+
+- **Tombol Copy di setiap code block.** Muncul saat hover (atau saat block
+  menerima fokus keyboard), menyalin isi code ke clipboard, lalu berubah jadi
+  "Tersalin!" selama 2 detik. Labelnya mengikuti bahasa halaman.
+- **Code block dual-theme** (github-light / github-dark) — warnanya otomatis
+  mengikuti light/dark mode situs.
+- **Syntax highlighting Shiki** untuk semua fenced code block (```bash, ```js, dll).
+
+Konvensi yang disarankan untuk konsistensi antar-artifact:
 
 1. **Konteks singkat** — apa ini dan kenapa disimpan.
 2. **Cara pakai / instal** — langkah atau perintah dalam code block.

@@ -7,7 +7,7 @@ export async function GET(context) {
   );
 
   return rss({
-    title: 'Muh. Dimas Januardi Nur — Blog',
+    title: 'Muh. Dimas Januardi Nur - Blog',
     description: 'Catatan tentang apa yang sedang saya bangun, apa yang rusak, dan apa yang saya pelajari di sepanjang jalan.',
     site: context.site,
     items: posts.map((post) => ({
