@@ -1,0 +1,52 @@
+---
+// Single 404 page for the whole site. Static hosts (GitHub Pages, Netlify…)
+// serve this one file for ANY missing URL — including /id/* ones — and there
+// is no server logic to pick a language, so the page itself detects the
+// locale from the URL and swaps its strings client-side. English is the
+// server-rendered default, so it works even with JS disabled.
+import Layout from '../layouts/Layout.astro';
+
+const copy = {
+  en: {
+    heading: 'Page not found',
+    body: 'The page you are looking for does not exist, was moved, or was never here.',
+    home: '← Back to home',
+  },
+} as const;
+---
+
+<Layout title={`Page not found - Muh. Dimas Januardi Nur`} description="Page not found." noindex>
+  <section
+    class="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-start justify-center px-6 py-16"
+    data-404
+  >
+    <p class="font-mono text-sm text-muted">404</p>
+    <h1 class="mt-3 font-display text-4xl sm:text-5xl" data-404-heading>{copy.en.heading}</h1>
+    <p class="mt-4 max-w-[60ch] text-ink/70" data-404-body>{copy.en.body}</p>
+    <a href="/" class="mt-8 text-sm text-muted hover:text-accent" data-404-home>{copy.en.home}</a>
+  </section>
+</Layout>
+
+<script>
+  // If the missing URL was under /id/..., the visitor almost certainly reads
+  // Indonesian — swap the strings in. English is already server-rendered, so
+  // the script only needs the ID copy. Also relink "home" so an ID visitor
+  // lands on /id/.
+  const idCopy = {
+    heading: 'Halaman tidak ditemukan',
+    body: 'Halaman yang kamu cari tidak ada, sudah dipindah, atau memang tidak pernah ada di sini.',
+    home: '← Kembali ke beranda',
+  };
+
+  function localize404() {
+    const scope = document.querySelector('[data-404]');
+    if (!scope || !/\/id(\/|$)/.test(window.location.pathname)) return;
+    scope.querySelector('[data-404-heading]')!.textContent = idCopy.heading;
+    scope.querySelector('[data-404-body]')!.textContent = idCopy.body;
+    const home = scope.querySelector<HTMLAnchorElement>('[data-404-home]');
+    if (home) home.href = '/id/';
+  }
+
+  localize404();
+  document.addEventListener('astro:page-load', localize404);
+</script>
