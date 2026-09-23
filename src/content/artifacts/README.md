@@ -30,7 +30,7 @@ src/content/artifacts/
 | `description` | string | 1–2 kalimat. Tampil di listing + meta SEO. |
 | `lang` | `'en'` \| `'id'` | Bahasa file ini — bukan bahasa kontennya saja, tapi penentu di halaman locale mana ia muncul. |
 | `type` | `'iso'` \| `'document'` \| `'cheatsheet'` \| `'tool'` \| `'other'` | Kategori. Menentukan kelompok di listing + badge. |
-| `url` | string | Lokasi file-nya — lihat aturan di §3. |
+| `url` | string *(opsional)* | Lokasi file-nya — lihat aturan di §3. **Tanpa `url`** = cheatsheet baca langsung (read-only), dirender penuh di halaman detail tanpa tombol unduh. |
 | `pubDate` | tanggal | Format `YYYY-MM-DD`. Dipakai untuk urutan listing. |
 
 ### Opsional
@@ -48,14 +48,15 @@ src/content/artifacts/
 |---|---|---|
 | **Kecil** (PDF cheatsheet, dokumen, config) | Commit ke `public/artifacts/` | Path situs: `/artifacts/nama-file.ext` |
 | **Besar** (ISO, image, arsip ratusan MB) | Jangan commit — link eksternal | URL absolut: `https://mirror.example.org/...` |
+| **Cheatsheet baca langsung** | Tidak ada file — konten markdown di body | *(kosongkan `url`)* |
 
 Aturan hard:
 
-- `url` **harus** diawali `https://` atau `/` — selain itu akan ditolak saat build.
+- `url` (kalau diisi) **harus** diawali `https://` atau `/` — selain itu akan ditolak saat build.
 - File besar **tidak pernah masuk git**. `.gitignore` sudah memblokir
   `*.iso`, `*.img`, `*.zip`, `*.tar*`, `*.7z`, `*.rar` di `public/artifacts/`.
 - Tombol di halaman detail menyesuaikan otomatis:
-  path lokal → **⬇ Unduh** (attribute `download`), eksternal → **↗ Buka tautan** (tab baru).
+  path lokal → **⬇ Unduh** (attribute `download`), eksternal → **↗ Buka tautan** (tab baru), tanpa `url` → tanpa tombol.
 
 ## 4. Body Markdown
 

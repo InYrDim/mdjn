@@ -40,14 +40,16 @@ const artifacts = defineCollection({
     tags: z.array(z.string()).default([]),
     // Human-readable size shown in listings, e.g. "4.7 GB" or "1.2 MB".
     size: z.string().optional(),
-    // Either an absolute external URL (mirrors, releases) or a site-relative
-    // path to a file committed under public/artifacts/ ("/artifacts/foo.pdf").
+    // Either an absolute external URL (mirrors, releases), a site-relative
+    // path to a file committed under public/artifacts/ ("/artifacts/foo.pdf"),
+    // or omitted entirely for read-only cheatsheets rendered on the page.
     url: z
       .string()
       .refine(
         (u) => /^https?:\/\//.test(u) || u.startsWith('/'),
         'url must be an http(s) URL or a site-relative path starting with "/"',
-      ),
+      )
+      .optional(),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     // Set true to keep an artifact out of listings and the sitemap.
