@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { projects } from '../../data/projects.js';
+import { getCollection } from 'astro:content';
 import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
 
 export interface Props {
@@ -10,6 +11,16 @@ export interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const tp = useTranslatedPath(lang);
+
+const latestPosts = (await getCollection('blog', ({ data }) => !data.draft && data.lang === lang))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const dateFormatter = new Intl.DateTimeFormat(lang === 'id' ? 'id-ID' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 
 const name = 'Muh. Dimas Januardi Nur';
 const role = t('hero.role');
@@ -83,6 +94,32 @@ const personJsonLd = {
       }
     </div>
   </section>
+
+  {
+    latestPosts.length > 0 && (
+      <section class="mx-auto max-w-4xl px-6 pb-24">
+        <div class="flex items-baseline justify-between">
+          <h2 class="font-display text-2xl">{t('home.latestHeading')}</h2>
+          <a href={tp('/blog')} class="text-sm text-muted hover:text-accent">
+            {t('home.viewAllPosts')}
+          </a>
+        </div>
+        <div class="mt-8 border-t border-line">
+          {latestPosts.map((post) => (
+            <a
+              href={tp(`/blog/${post.id.split('/').pop()}`)}
+              class="group flex items-baseline justify-between gap-4 border-b border-line py-5 transition-colors hover:bg-ink/[0.03]"
+            >
+              <h3 class="font-display text-lg group-hover:text-accent">{post.data.title}</h3>
+              <time datetime={post.data.pubDate.toISOString()} class="shrink-0 text-sm text-muted">
+                {dateFormatter.format(post.data.pubDate)}
+              </time>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   <section id="contact" class="mx-auto max-w-4xl px-6 pb-28">
     <h2 class="font-display text-2xl">{t('contact.heading')}</h2>

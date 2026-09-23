@@ -13,6 +13,7 @@ export const languageNames = {
 export const ui = {
   en: {
     'nav.work': 'Work',
+    'nav.blog': 'Blog',
     'nav.about': 'About',
     'nav.contact': 'Contact',
 
@@ -23,6 +24,15 @@ export const ui = {
       'I build things that live on the web, in your pocket, and in the cloud — full-stack by trade, most at home across Next.js, Flutter, and the infrastructure that keeps it all running.',
 
     'work.heading': 'Selected work',
+
+    'home.latestHeading': 'Latest writing',
+    'home.viewAllPosts': 'All posts',
+
+    'blog.title': 'Blog — Muh. Dimas Januardi Nur',
+    'blog.description': "Notes on what I'm building, what's breaking, and what I'm learning along the way.",
+    'blog.heading': 'Blog',
+    'blog.empty': 'No posts yet — check back soon.',
+    'blog.back': '← Back to blog',
 
     'contact.heading': 'Get in touch',
     'contact.body': 'Best way to reach me is email — I read everything and reply within a couple of days.',
@@ -46,6 +56,7 @@ export const ui = {
   },
   id: {
     'nav.work': 'Karya',
+    'nav.blog': 'Blog',
     'nav.about': 'Tentang',
     'nav.contact': 'Kontak',
 
@@ -56,6 +67,15 @@ export const ui = {
       'Saya membangun hal-hal yang hidup di web, di saku Anda, dan di cloud — full-stack sebagai profesi, dan paling nyaman bekerja dengan Next.js, Flutter, serta infrastruktur yang menjaga semuanya tetap berjalan.',
 
     'work.heading': 'Karya pilihan',
+
+    'home.latestHeading': 'Tulisan terbaru',
+    'home.viewAllPosts': 'Semua tulisan',
+
+    'blog.title': 'Blog — Muh. Dimas Januardi Nur',
+    'blog.description': 'Catatan tentang apa yang sedang saya bangun, apa yang rusak, dan apa yang saya pelajari di sepanjang jalan.',
+    'blog.heading': 'Blog',
+    'blog.empty': 'Belum ada tulisan — nantikan yang berikutnya.',
+    'blog.back': '← Kembali ke blog',
 
     'contact.heading': 'Hubungi saya',
     'contact.body':

@@ -5,14 +5,17 @@ export interface Props {
   lang: Lang;
   /** Canonical, locale-agnostic path of the current page — the switcher links to this same page in the other language. */
   path?: string;
+  /** Which locales actually have this exact page. Omit when it's available everywhere (the default for every page except blog posts). */
+  availableLangs?: Lang[];
 }
 
-const { lang, path = '/' } = Astro.props;
+const { lang, path = '/', availableLangs } = Astro.props;
 const t = useTranslations(lang);
 const tp = (p: string) => translatePath(p, lang);
 
 const navItems = [
   { href: '/#work', key: 'nav.work' },
+  { href: '/blog', key: 'nav.blog' },
   { href: '/about', key: 'nav.about' },
   { href: '/#contact', key: 'nav.contact' },
 ] as const;
@@ -39,18 +42,23 @@ const switcher = [
       <span class="h-4 w-px bg-line" aria-hidden="true"></span>
       <div class="flex items-center gap-2">
         {
-          switcher.map((s, i) => (
-            <>
-              {i > 0 && <span class="text-line">/</span>}
-              <a
-                href={translatePath(path, s.code)}
-                class:list={['transition-colors hover:text-accent', lang === s.code ? 'text-ink' : 'text-muted']}
-                aria-current={lang === s.code ? 'true' : undefined}
-              >
-                {s.label}
-              </a>
-            </>
-          ))
+          switcher.map((s, i) => {
+            const isAvailable = !availableLangs || availableLangs.includes(s.code);
+            const href = isAvailable ? translatePath(path, s.code) : translatePath('/blog', s.code);
+            return (
+              <>
+                {i > 0 && <span class="text-line">/</span>}
+                <a
+                  href={href}
+                  title={isAvailable ? undefined : `Not translated yet — showing the ${s.label} blog`}
+                  class:list={['transition-colors hover:text-accent', lang === s.code ? 'text-ink' : 'text-muted']}
+                  aria-current={lang === s.code ? 'true' : undefined}
+                >
+                  {s.label}
+                </a>
+              </>
+            );
+          })
         }
       </div>
     </nav>

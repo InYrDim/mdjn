@@ -14,9 +14,12 @@ export interface Props {
   lang?: Lang;
   /** Canonical, locale-agnostic path for this page: "/", "/about", "/projects/fokus". Powers hreflang + the language switcher. */
   path?: string;
+  /** Pass a subset when this exact page isn't translated into every locale yet (e.g. a single-language blog post). */
+  availableLangs?: Lang[];
 }
 
-const { title, description, image, type, noindex, lang = 'en', path = '/' } = Astro.props;
+const { title, description, image, type, noindex, lang = 'en', path = '/', availableLangs } = Astro.props;
+const rssHref = lang === 'id' ? '/id/rss.xml' : '/rss.xml';
 ---
 
 <!doctype html>
@@ -34,11 +37,22 @@ const { title, description, image, type, noindex, lang = 'en', path = '/' } = As
       rel="stylesheet"
     />
 
-    <SEO title={title} description={description} image={image} type={type} noindex={noindex} lang={lang} path={path} />
+    <link rel="alternate" type="application/rss+xml" title="Muh. Dimas Januardi Nur — Blog" href={rssHref} />
+
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      type={type}
+      noindex={noindex}
+      lang={lang}
+      path={path}
+      availableLangs={availableLangs}
+    />
     <slot name="head" />
   </head>
   <body class="bg-paper font-sans text-ink antialiased">
-    <SiteHeader lang={lang} path={path} />
+    <SiteHeader lang={lang} path={path} availableLangs={availableLangs} />
     <main>
       <slot />
     </main>

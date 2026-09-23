@@ -53,6 +53,37 @@ public/
 └── robots.txt
 ```
 
+## Blog
+
+Posts are Markdown files using Astro Content Collections — no CMS needed.
+
+```
+src/content/
+├── blog/
+│   ├── en/*.md   # English posts
+│   └── id/*.md   # Indonesian posts
+src/content.config.ts  # frontmatter schema (title, description, lang, pubDate, tags, draft)
+```
+
+- **A post belongs to one language.** Unlike the static pages, blog posts
+  are *not* required to exist in both `en` and `id` — write in whichever
+  language fits that post. `/blog` only lists English posts, `/id/blog`
+  only lists Indonesian ones.
+- **To link two posts as translations of each other, give them the same
+  filename** in `en/` and `id/` (e.g. `en/fokus-paper.md` +
+  `id/fokus-paper.md`, as in the sample posts). The site detects the match
+  and wires up the hreflang tag between them automatically — nothing else
+  to configure. For a post that only exists in one language, the header's
+  language toggle falls back to that language's blog index instead of a
+  dead link.
+- **Drafts**: set `draft: true` in frontmatter to keep a post out of
+  listings, RSS, and the sitemap while you're still writing it.
+- **RSS**: `/rss.xml` (English) and `/id/rss.xml` (Indonesian), linked from
+  every page's `<head>` automatically.
+- To add a post: drop a new `.md` file in the right locale folder with the
+  required frontmatter fields — a page, sitemap entry, and RSS item are all
+  generated automatically at build time.
+
 ## Internationalization (i18n)
 
 The site ships in English (default, unprefixed at `/`) and Indonesian

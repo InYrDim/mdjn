@@ -14,6 +14,8 @@ export interface Props {
   lang?: Lang;
   /** Canonical, locale-agnostic path used to build hreflang alternates: "/", "/about", "/projects/fokus". */
   path?: string;
+  /** Which locales actually have a version of this exact page. Defaults to all locales — pass a subset for content (like blog posts) that isn't translated yet. */
+  availableLangs?: Lang[];
 }
 
 const {
@@ -24,6 +26,7 @@ const {
   noindex = false,
   lang = 'en',
   path = '/',
+  availableLangs,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -33,6 +36,11 @@ const imageURL = image ? new URL(image, Astro.site) : undefined;
 const ogLocales = { en: 'en_US', id: 'id_ID' } as const;
 const allLangs = Object.keys(ogLocales) as Lang[];
 const alternateLangs = allLangs.filter((l) => l !== lang);
+
+// Only advertise hreflang alternates for locales that actually have this page.
+const hreflangLangs = availableLangs ?? allLangs;
+const showHreflang = hreflangLangs.length > 1;
+const xDefaultLang = hreflangLangs.includes('en') ? 'en' : hreflangLangs[0];
 ---
 
 <title>{title}</title>
@@ -41,9 +49,12 @@ const alternateLangs = allLangs.filter((l) => l !== lang);
 {noindex && <meta name="robots" content="noindex, nofollow" />}
 
 <!-- Tell search engines this page has versions in other languages, so they're
-     treated as translations of each other rather than duplicate content. -->
-{allLangs.map((l) => <link rel="alternate" hreflang={l} href={new URL(translatePath(path, l), Astro.site)} />)}
-<link rel="alternate" hreflang="x-default" href={new URL(translatePath(path, 'en'), Astro.site)} />
+     treated as translations of each other rather than duplicate content.
+     Skipped when this content (e.g. an untranslated blog post) only exists in one language. -->
+{showHreflang && hreflangLangs.map((l) => (
+  <link rel="alternate" hreflang={l} href={new URL(translatePath(path, l), Astro.site)} />
+))}
+{showHreflang && <link rel="alternate" hreflang="x-default" href={new URL(translatePath(path, xDefaultLang), Astro.site)} />}
 
 <!-- Open Graph (Facebook, LinkedIn, Slack unfurls, etc.) -->
 <meta property="og:type" content={type} />

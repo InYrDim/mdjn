@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+  entry: CollectionEntry<'blog'>;
+}
+
+const { lang, entry } = Astro.props;
+const { Content } = await render(entry);
+const t = useTranslations(lang);
+const tp = useTranslatedPath(lang);
+
+const slug = entry.id.split('/').pop();
+
+// Which locales actually have a post at this slug — used so hreflang only
+// ever points at pages that exist. Most posts will only have one.
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const availableLangs = allPosts.filter((p) => p.id.split('/').pop() === slug).map((p) => p.data.lang);
+
+const dateFormatter = new Intl.DateTimeFormat(lang === 'id' ? 'id-ID' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.pubDate.toISOString(),
+  dateModified: (entry.data.updatedDate ?? entry.data.pubDate).toISOString(),
+  inLanguage: lang,
+  url: new URL(tp(`/blog/${slug}`), Astro.site).toString(),
+  author: {
+    '@type': 'Person',
+    name: 'Muh. Dimas Januardi Nur',
+  },
+};
+---
+
+<Layout
+  title={`${entry.data.title} — Muh. Dimas Januardi Nur`}
+  description={entry.data.description}
+  type="article"
+  lang={lang}
+  path={`/blog/${slug}`}
+  availableLangs={availableLangs}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+    <a href={tp('/blog')} class="text-sm text-muted hover:text-accent">
+      {t('blog.back')}
+    </a>
+
+    <h1 class="mt-6 font-display text-4xl sm:text-5xl">{entry.data.title}</h1>
+
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted">
+      <time datetime={entry.data.pubDate.toISOString()}>{dateFormatter.format(entry.data.pubDate)}</time>
+      {
+        entry.data.tags.length > 0 && (
+          <>
+            <span class="h-3 w-px bg-line" aria-hidden="true" />
+            <ul class="flex flex-wrap gap-2">
+              {entry.data.tags.map((tag) => (
+                <li class="rounded-full border border-line px-3 py-1 text-xs text-muted">{tag}</li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+    </div>
+
+    <div class="prose prose-slate mt-10 max-w-none prose-headings:font-display prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-strong:text-ink">
+      <Content />
+    </div>
+  </article>
+</Layout>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Design tokens — swap these to re-skin the whole site from one place. */
 @theme {
