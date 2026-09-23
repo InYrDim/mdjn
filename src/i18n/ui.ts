@@ -34,6 +34,23 @@ export const ui = {
     'blog.empty': 'No posts yet — check back soon.',
     'blog.back': '← Back to blog',
 
+    'nav.artifacts': 'Artifacts',
+    'artifacts.title': 'Artifacts — Muh. Dimas Januardi Nur',
+    'artifacts.description':
+      'Downloadable resources — ISO images, documents, cheatsheets, and tools worth keeping around.',
+    'artifacts.heading': 'Artifacts',
+    'artifacts.empty': 'No artifacts yet — check back soon.',
+    'artifacts.back': '← Back to artifacts',
+    'artifacts.download': 'Download',
+    'artifacts.visitLink': 'Open link',
+    'artifacts.sizeLabel': 'Size',
+    'artifacts.typeLabel': 'Type',
+    'artifact.type.iso': 'ISO',
+    'artifact.type.document': 'Document',
+    'artifact.type.cheatsheet': 'Cheatsheet',
+    'artifact.type.tool': 'Tool',
+    'artifact.type.other': 'Other',
+
     'contact.heading': 'Get in touch',
     'contact.body': 'Best way to reach me is email — I read everything and reply within a couple of days.',
 
@@ -76,6 +93,23 @@ export const ui = {
     'blog.heading': 'Blog',
     'blog.empty': 'Belum ada tulisan — nantikan yang berikutnya.',
     'blog.back': '← Kembali ke blog',
+
+    'nav.artifacts': 'Artefak',
+    'artifacts.title': 'Artefak — Muh. Dimas Januardi Nur',
+    'artifacts.description':
+      'Resource yang bisa diunduh — image ISO, dokumen, cheatsheet, dan tools yang layak disimpan.',
+    'artifacts.heading': 'Artefak',
+    'artifacts.empty': 'Belum ada artefak — nantikan yang berikutnya.',
+    'artifacts.back': '← Kembali ke artefak',
+    'artifacts.download': 'Unduh',
+    'artifacts.visitLink': 'Buka tautan',
+    'artifacts.sizeLabel': 'Ukuran',
+    'artifacts.typeLabel': 'Tipe',
+    'artifact.type.iso': 'ISO',
+    'artifact.type.document': 'Dokumen',
+    'artifact.type.cheatsheet': 'Cheatsheet',
+    'artifact.type.tool': 'Tool',
+    'artifact.type.other': 'Lainnya',
 
     'contact.heading': 'Hubungi saya',
     'contact.body':

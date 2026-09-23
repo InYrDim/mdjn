@@ -1,0 +1,16 @@
+---
+import ArtifactPage from '../../components/views/ArtifactPage.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const artifacts = await getCollection('artifacts', ({ data }) => !data.draft && data.lang === 'en');
+  return artifacts.map((entry) => ({
+    params: { slug: entry.id.split('/').pop() },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+---
+
+<ArtifactPage lang="en" entry={entry} />

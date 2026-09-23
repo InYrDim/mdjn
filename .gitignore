@@ -22,3 +22,15 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Large downloadable files served from /public/artifacts/ — these are hosted
+# externally (official mirrors, GitHub releases) instead of in git. Small files
+# like cheatsheet PDFs are fine to commit; force-add only if you really mean it.
+public/artifacts/*.iso
+public/artifacts/*.img
+public/artifacts/*.zip
+public/artifacts/*.tar
+public/artifacts/*.tar.gz
+public/artifacts/*.tgz
+public/artifacts/*.7z
+public/artifacts/*.rar
