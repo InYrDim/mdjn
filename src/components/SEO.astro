@@ -3,10 +3,13 @@
 // hreflang alternates for the other locale, Open Graph, and Twitter Cards.
 import { translatePath, type Lang } from '../i18n/utils';
 
+/** Site-wide fallback preview image (1200x630, in /public). Used whenever a page doesn't pass its own `image`. */
+const DEFAULT_OG_IMAGE = '/og-image.png';
+
 export interface Props {
   title: string;
   description: string;
-  /** Path to a 1200x630 image in /public, e.g. "/og-image.jpg". Omit if you don't have one yet. */
+  /** Path to a 1200x630 image in /public, e.g. "/og-image.jpg". Falls back to the site default. */
   image?: string;
   type?: 'website' | 'article' | 'profile';
   /** Set true on pages you don't want indexed (drafts, thank-you pages, etc). */
@@ -30,7 +33,7 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const imageURL = image ? new URL(image, Astro.site) : undefined;
+const imageURL = new URL(image ?? DEFAULT_OG_IMAGE, Astro.site);
 
 // Keep this in sync with astro.config.mjs -> i18n.locales
 const ogLocales = { en: 'en_US', id: 'id_ID' } as const;
@@ -63,10 +66,10 @@ const xDefaultLang = hreflangLangs.includes('en') ? 'en' : hreflangLangs[0];
 <meta property="og:description" content={description} />
 <meta property="og:locale" content={ogLocales[lang]} />
 {alternateLangs.map((l) => <meta property="og:locale:alternate" content={ogLocales[l]} />)}
-{imageURL && <meta property="og:image" content={imageURL} />}
+<meta property="og:image" content={imageURL} />
 
 <!-- Twitter / X -->
-<meta name="twitter:card" content={imageURL ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
-{imageURL && <meta name="twitter:image" content={imageURL} />}
+<meta name="twitter:image" content={imageURL} />
