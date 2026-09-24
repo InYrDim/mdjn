@@ -55,8 +55,12 @@ async function loadMermaid(theme: 'default' | 'dark') {
         theme === 'dark'
           ? {
               // Mermaid's built-in "dark" theme assumes a near-black canvas;
-              // our dark surface is #131316, so nudge the key colors.
+              // our dark surface is #131316, so nudge the key colors. Flowchart
+              // reads mainBkg/textColor/nodeBorder rather than primaryColor.
               background: '#131316',
+              mainBkg: '#1e1e24',
+              textColor: '#ececee',
+              nodeBorder: '#3f3f46',
               primaryColor: '#1e1e24',
               primaryTextColor: '#ececee',
               primaryBorderColor: '#3f3f46',
@@ -64,6 +68,10 @@ async function loadMermaid(theme: 'default' | 'dark') {
               fontFamily: 'Geist Variable, ui-sans-serif, system-ui, sans-serif',
             }
           : {
+              background: '#fafafa',
+              mainBkg: '#eef2ff',
+              textColor: '#18181b',
+              nodeBorder: '#94a3b8',
               primaryColor: '#eef2ff',
               primaryTextColor: '#18181b',
               primaryBorderColor: '#94a3b8',
@@ -81,7 +89,7 @@ async function renderOne(pre: HTMLPreElement, source: string) {
   try {
     const { svg } = await mermaid.render(`mermaid-${Math.random().toString(36).slice(2)}`, source);
     if (svg.trimStart().startsWith('<iframe')) {
-      renderSandboxed(pre, svg);
+      renderSandboxed(pre, svg, isDark ? '#131316' : '#fafafa');
     } else {
       renderInline(pre, svg);
     }
@@ -121,7 +129,7 @@ function renderInline(pre: HTMLPreElement, svg: string) {
 // shrinks but the height doesn't, leaving dead space below the diagram. Convert
 // it to fluid sizing: width:100%, height driven by the SVG's aspect ratio,
 // capped at the diagram's natural width so small diagrams keep their size.
-function renderSandboxed(pre: HTMLPreElement, html: string) {
+function renderSandboxed(pre: HTMLPreElement, html: string, surface: string) {
   const holder = document.createElement('div');
   holder.innerHTML = html;
   const iframe = holder.querySelector('iframe');
@@ -135,25 +143,45 @@ function renderSandboxed(pre: HTMLPreElement, html: string) {
   iframe.style.width = '100%';
   iframe.style.border = '0';
   iframe.style.margin = '0 auto';
-  const { width: naturalWidth, height: naturalHeight } = readSandboxedViewBox(html);
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    iframe.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
-    iframe.style.maxWidth = `${Math.ceil(naturalWidth)}px`;
+  const docHtml = decodeSandboxedDoc(html);
+  if (docHtml) {
+    // Paint the sandboxed document itself: its body ships transparent, and a
+    // transparent iframe can composite white during load — light-on-dark labels
+    // then sit on a white canvas and vanish. Pin the page surface color.
+    // (Mermaid's sandbox doc has no <head>; a leading <style> is hoisted into
+    // the implicit head by the HTML parser.)
+    const painted = `<style>html,body{background:${surface};margin:0;}</style>${docHtml}`;
+    iframe.setAttribute('src', `data:text/html;charset=utf-8,${encodeURIComponent(painted)}`);
+    const { width: naturalWidth, height: naturalHeight } = readViewBox(docHtml);
+    if (naturalWidth > 0 && naturalHeight > 0) {
+      iframe.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
+      iframe.style.maxWidth = `${Math.ceil(naturalWidth)}px`;
+    } else if (fallbackHeight > 0) {
+      // Couldn't read the viewBox; at least keep mermaid's measured height.
+      iframe.style.height = `${Math.ceil(fallbackHeight)}px`;
+    }
   } else if (fallbackHeight > 0) {
-    // Couldn't read the viewBox; at least keep mermaid's measured height.
     iframe.style.height = `${Math.ceil(fallbackHeight)}px`;
   }
   pre.replaceChildren(iframe);
 }
 
-// Decode the sandboxed iframe's data: URL document and read the inner SVG's
-// viewBox, which carries the diagram's natural width and height.
-function readSandboxedViewBox(html: string): { width: number; height: number } {
+// Decode the sandboxed iframe's data: URL document (mermaid ships it base64).
+function decodeSandboxedDoc(html: string): string | null {
   const b64 = html.match(/src="data:text\/html;charset=UTF-8;base64,([^"]+)"/)?.[1];
-  if (!b64) return { width: 0, height: 0 };
+  if (!b64) return null;
   try {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const doc = new DOMParser().parseFromString(new TextDecoder().decode(bytes), 'text/html');
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+// Read the inner SVG's viewBox, which carries the diagram's natural size.
+function readViewBox(docHtml: string): { width: number; height: number } {
+  try {
+    const doc = new DOMParser().parseFromString(docHtml, 'text/html');
     const [, , w = 0, h = 0] = (doc.querySelector('svg')?.getAttribute('viewBox') ?? '')
       .trim()
       .split(/\s+/)
