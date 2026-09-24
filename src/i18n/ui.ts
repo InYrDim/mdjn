@@ -60,6 +60,10 @@ export const ui = {
     'share.qr': 'Scan to open this page',
     'share.close': 'Close',
 
+    'presentation.open': 'Presentation mode',
+    'presentation.close': 'Exit presentation (Esc)',
+    'presentation.hint': '← → navigate · F fullscreen · Esc exit',
+
     'contact.heading': 'Get in touch',
     'contact.body': 'Best way to reach me is email. I read everything and reply within a couple of days.',
 
@@ -128,6 +132,10 @@ export const ui = {
     'share.copied': 'Tersalin!',
     'share.qr': 'Pindai untuk membuka halaman ini',
     'share.close': 'Tutup',
+
+    'presentation.open': 'Mode presentasi',
+    'presentation.close': 'Keluar presentasi (Esc)',
+    'presentation.hint': '← → navigasi · F layar penuh · Esc keluar',
 
     'contact.heading': 'Hubungi saya',
     'contact.body':
