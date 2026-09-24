@@ -1,7 +1,7 @@
 ---
 name: site-presentation
 description: >-
-  Menambah, mengaktifkan, atau mengubah fitur Presentation Mode di website ini — slide deck overlay yang dibangun dari konten Markdown halaman saat tombol diklik. Gunakan skill ini setiap kali user minta "mode presentasi", "presentation mode", "slide deck", "PPT dari blog post/artifact", minta mengaktifkan presentation mode di halaman yang belum memilikinya, minta mengubah perilaku deck (navigasi, pembagian slide, chrome, shortcut), melaporkan bug pada deck slide, atau minta fitur turunannya (presenter notes, timer, export) — bahkan kalau user tidak menyebut nama komponen PresentationMode.astro secara eksplisit. Konvensi deck mengikuti skill html-ppt (pattern .slide + .is-active, keyboard-first, deep-link #/N), diadaptasi ke design-token situs.
+  Menambah, mengaktifkan, atau mengubah fitur Presentation Mode di website ini — slide deck overlay yang dibangun dari konten Markdown halaman saat tombol diklik. Gunakan skill ini setiap kali user minta "mode presentasi", "presentation mode", "slide deck", "PPT dari blog post/artifact", minta mengaktifkan presentation mode di halaman yang belum memilikinya, minta mengubah perilaku deck (navigasi, pembagian slide, chrome, shortcut), melaporkan bug pada deck slide, atau minta fitur turunannya (presenter notes, timer, export) — bahkan kalau user tidak menyebut nama komponen PresentationMode.astro secara eksplisit. Bukan untuk membuat file deck `.html` standalone — itu tugas skill html-ppt. Konvensi deck mengikuti skill html-ppt (pattern .slide + .is-active, keyboard-first, deep-link #/N), diadaptasi ke design-token situs.
 ---
 
 # Skill: Presentation Mode (slide deck dari konten Markdown)
@@ -72,7 +72,8 @@ Detail penting saat meng-clone konten ke slide (`cloneBlock()`):
 
 ## 3. Mengaktifkan presentation mode di halaman baru
 
-Tiga langkah, ikuti persis (contoh nyata: `src/components/views/BlogPostPage.astro`):
+Tiga langkah pemasangan, lalu satu langkah validasi — ikuti persis
+(contoh nyata: `src/components/views/BlogPostPage.astro`):
 
 1. **Import** komponen di file view (bukan file route):
 
@@ -88,7 +89,13 @@ Tiga langkah, ikuti persis (contoh nyata: `src/components/views/BlogPostPage.ast
    ```
 
    - `contentSelector` harus unik dan stabil di halaman itu — biasanya
-     `article .prose` karena semua view halaman konten memakai pola ini.
+     `article .prose` karena view Blog/Artifact memakai pola ini. Tapi
+     **cek dulu view-nya**: tidak semua punya container `.prose`
+     (mis. `ProjectPage.astro` merender paragraf langsung di `<article>`).
+     Kalau tidak ada, bungkus konten Markdown/naratifnya dengan satu div
+     wrapper tanpa styling (mis. `article .presentation-content`) dan arahkan
+     selector ke situ — jangan pakai `article` mentah, deck akan menarik
+     back-link, judul, dan meta sebagai slide konten.
    - `title` dipakai untuk slide cover + chrome; kalau tidak diberikan,
      runtime memakai `document.title` dengan suffix situs dipangkas.
    - `lang` wajib diteruskan supaya label tombol ikut locale halaman.
