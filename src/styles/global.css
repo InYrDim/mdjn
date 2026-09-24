@@ -16,8 +16,41 @@
   background-color: transparent !important;
 }
 
+/* !important: Shiki inlines the light color per-span, which beats any normal
+   selector — without it dark mode keeps the light palette (near-invisible
+   #24292e text on the dark surface). */
 [data-theme='dark'] .astro-code span {
-  color: var(--shiki-dark);
+  color: var(--shiki-dark) !important;
+}
+
+/* Mermaid blocks: before rendering they look like a plain code fence; after
+   rendering they hold an SVG. Sizing is done in JS (fluid width capped at the
+   diagram's natural width; viewBox preserves the aspect ratio) — CSS here
+   only adds spacing so the diagram never touches the border. */
+pre.mermaid-rendered {
+  padding: 1rem 0.75rem;
+  background-color: transparent;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  overflow-x: auto;
+  text-align: center;
+}
+
+pre.mermaid-rendered svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Sandbox iframes render into an opaque document that may composite white or
+   transparent in dark mode — pin the page surface color so the diagram canvas
+   always matches the theme. */
+pre.mermaid-rendered iframe {
+  background-color: var(--color-paper);
+}
+
+/* A fence that failed to parse keeps its raw source — flag it so it's obvious. */
+pre.mermaid-error {
+  border-color: #dc2626;
 }
 
 /*
