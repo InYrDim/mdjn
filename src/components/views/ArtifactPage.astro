@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Mermaid from '../../components/Mermaid.astro';
+import PresentationMode from '../../components/PresentationMode.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
 
@@ -139,6 +140,7 @@ const jsonLd = {
       <Content />
     </div>
     <Mermaid contentSelector="article .prose" />
+    <PresentationMode contentSelector="article .prose" title={entry.data.title} lang={lang} />
   </article>
 </Layout>
 
