@@ -36,7 +36,8 @@ src/
 ├── components/
 │   ├── SEO.astro         # <head> tags: title, description, canonical, OG, Twitter
 │   ├── SiteHeader.astro
-│   └── SiteFooter.astro
+│   ├── SiteFooter.astro
+│   └── PresentationMode.astro  # slide-deck overlay for markdown pages
 ├── data/
 │   └── projects.js       # your projects — edit this array, pages generate automatically
 ├── layouts/
@@ -83,6 +84,31 @@ src/content.config.ts  # frontmatter schema (title, description, lang, pubDate, 
 - To add a post: drop a new `.md` file in the right locale folder with the
   required frontmatter fields — a page, sitemap entry, and RSS item are all
   generated automatically at build time.
+
+## Presentation mode
+
+Blog posts and artifact pages have a slide-deck overlay built from their
+content at click time. Open the screen icon (bottom-right, under the share
+button) or the page's content is turned into slides: title cover → each
+`h2`/`h3` starts a slide → `hr` renders a divider → long lists are chunked.
+Follows the site theme and works with mermaid diagrams and code blocks.
+
+Controls (keyboard-first, per the html-ppt conventions):
+
+- `←` `→` / Space / PgUp / PgDn / Home / End — navigate
+- `F` — fullscreen; `Esc` — exit; swipe on touch devices
+- `#/N` deep-link — open a deck directly at slide N (e.g. `/blog/fokus-paper#/2`)
+
+To enable it on another page, render the reusable component with a selector
+for that page's markdown container:
+
+```astro
+import PresentationMode from '../components/PresentationMode.astro';
+
+<PresentationMode contentSelector="article .prose" title={someTitle} lang={lang} />
+```
+
+UI strings live under the `presentation.*` keys in `src/i18n/ui.ts`.
 
 ## Internationalization (i18n)
 
