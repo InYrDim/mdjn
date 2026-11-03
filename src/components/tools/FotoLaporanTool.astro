@@ -1,5 +1,4 @@
 ---
-import ToolIcon from './ToolIcon.astro';
 import { type Lang } from '../../i18n/utils';
 
 export interface Props {
@@ -7,471 +6,634 @@ export interface Props {
 }
 
 const { lang } = Astro.props;
-const isId = lang === 'id';
 ---
 
-<div class="foto-laporan-root">
-  <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-    <!-- LEFT PANEL: Controls -->
-    <div class="space-y-5 lg:col-span-5">
-      <!-- Upload Dropzone -->
-      <div>
-        <label
-          id="fl-drop"
-          class="group flex cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-line bg-paper px-4 py-6 text-center transition-colors hover:border-accent hover:bg-ink/[0.02]"
-        >
-          <input type="file" id="fl-file" accept="image/*" multiple class="hidden" />
-          <div class="text-muted transition-colors group-hover:text-accent">
-            <ToolIcon name="camera" size={28} />
-          </div>
-          <span class="mt-2 text-sm font-medium text-ink">
-            {isId ? 'Pilih Foto' : 'Select Photos'}
-          </span>
-          <span class="mt-0.5 text-xs text-muted">
-            {isId ? 'atau tarik & lepas file ke sini' : 'or drag & drop files here'}
-          </span>
-        </label>
-        <p id="fl-msg" class="mt-2 font-mono text-xs text-muted min-h-[1.4em]"></p>
+<!-- Dynamic @page style element for print page dimension setting -->
+<style id="pg"></style>
+
+<div class="fl-workspace rounded-sm border border-line bg-paper text-ink shadow-xs overflow-hidden">
+  <div class="fl-app">
+    <!-- LEFT SIDEBAR -->
+    <aside class="fl-side">
+      <div class="fl-top">
+        <h2 class="fl-title">Foto laporan</h2>
+        <p class="fl-hint">Unggah foto, lalu klik foto di pratinjau untuk crop, ukuran, keterangan, dan urutan.</p>
       </div>
 
-      <!-- Accordion Section 1: Preset -->
-      <details class="group border-t border-line pt-3" open>
-        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
-          <span>{isId ? 'Preset Pengaturan' : 'Layout Presets'}</span>
-          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        <div class="mt-3 space-y-3 pb-2 text-xs">
-          <!-- Preset list -->
-          <div id="fl-plist" class="space-y-1.5"></div>
+      <div class="fl-scroll">
+        <!-- File Drop Area -->
+        <label class="fl-drop" id="drop">
+          <input type="file" id="file" accept="image/*" multiple />
+          Pilih foto
+          <small>atau tarik file ke sini</small>
+        </label>
+        <p id="msg" role="status" class="fl-hint"></p>
 
-          <!-- Save current settings as preset -->
-          <div class="space-y-2 border-t border-line/60 pt-3">
-            <div class="flex gap-2">
-              <input
-                type="text"
-                id="fl-pname"
-                maxlength="60"
-                placeholder={isId ? 'Nama preset baru...' : 'New preset name...'}
-                class="flex-1 rounded-sm border border-line bg-transparent px-2.5 py-1.5 text-xs text-ink placeholder:text-muted/60 transition-colors focus:border-accent focus:outline-none"
-              />
-              <select
-                id="fl-psize"
-                class="rounded-sm border border-line bg-paper px-2 py-1.5 text-xs text-ink transition-colors focus:border-accent focus:outline-none"
-              >
-                <option value="none">{isId ? 'Ukuran tetap' : 'Fixed size'}</option>
-                <option value="c1">{isId ? 'Bagi 1 kolom' : '1 Column'}</option>
-                <option value="c2">{isId ? 'Bagi 2 kolom' : '2 Columns'}</option>
-                <option value="c3">{isId ? 'Bagi 3 kolom' : '3 Columns'}</option>
-                <option value="c4">{isId ? 'Bagi 4 kolom' : '4 Columns'}</option>
-                <option value="box">{isId ? 'Ukuran seragam' : 'Uniform box'}</option>
+        <!-- Preset Section -->
+        <details open>
+          <summary>Preset</summary>
+          <div class="fl-pset">
+            <div class="fl-plist" id="plist"></div>
+            <div class="fl-save">
+              <input type="text" id="pname" maxlength="60" placeholder="Nama preset baru" aria-label="Nama preset baru" />
+              <select id="psize" aria-label="Ukuran foto pada preset">
+                <option value="none">Ukuran foto tidak diubah</option>
+                <option value="c1">Bagi 1 kolom</option>
+                <option value="c2">Bagi 2 kolom</option>
+                <option value="c3">Bagi 3 kolom</option>
+                <option value="c4">Bagi 4 kolom</option>
+                <option value="box">Kotak dari “Ukuran semua foto”</option>
               </select>
+              <button type="button" id="psave">Simpan pengaturan saat ini</button>
             </div>
-            <button
-              type="button"
-              id="fl-psave"
-              class="w-full rounded-sm border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-accent hover:text-accent"
-            >
-              {isId ? 'Simpan Pengaturan Saat Ini' : 'Save Current Settings'}
-            </button>
-          </div>
-
-          <!-- Preset Import / Export Actions -->
-          <div class="flex flex-wrap gap-1.5 pt-1">
-            <button type="button" id="fl-pimp" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
-              {isId ? 'Impor File' : 'Import File'}
-            </button>
-            <button type="button" id="fl-pexp" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
-              {isId ? 'Ekspor Semua' : 'Export All'}
-            </button>
-            <button type="button" id="fl-ptoggle" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
-              {isId ? 'Teks JSON' : 'JSON Text'}
-            </button>
-          </div>
-          <input type="file" id="fl-pfile" accept=".json,application/json" class="hidden" />
-
-          <!-- JSON text paste drawer -->
-          <div id="fl-pbox" class="hidden space-y-2 rounded-sm border border-line bg-ink/[0.02] p-2.5">
-            <textarea
-              id="fl-ptext"
-              rows="4"
-              spellcheck="false"
-              placeholder={isId ? 'Teks preset JSON...' : 'JSON preset text...'}
-              class="w-full resize-none font-mono text-[11px] rounded-sm border border-line bg-paper p-2 text-ink focus:border-accent focus:outline-none"
-            ></textarea>
-            <div class="flex gap-2">
-              <button type="button" id="fl-pcopy" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
-                {isId ? 'Salin' : 'Copy'}
-              </button>
-              <button type="button" id="fl-ptextimp" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
-                {isId ? 'Impor Teks' : 'Import Text'}
-              </button>
-              <button type="button" id="fl-pclose" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
-                {isId ? 'Tutup' : 'Close'}
-              </button>
+            <div class="fl-acts">
+              <button type="button" id="pimp">Impor</button>
+              <button type="button" id="pexp">Ekspor semua</button>
+              <button type="button" id="ptoggle">Tempel teks</button>
             </div>
+            <input type="file" id="pfile" accept=".json,application/json" hidden />
+            <div id="pbox" hidden>
+              <textarea id="ptext" rows="6" spellcheck="false" placeholder="Teks preset muncul di sini. Atau tempel teks preset lalu klik Impor teks." aria-label="Teks preset"></textarea>
+              <div class="fl-acts">
+                <button type="button" id="pcopy">Salin teks</button>
+                <button type="button" id="ptextimp">Impor teks</button>
+                <button type="button" id="pclose">Tutup</button>
+              </div>
+            </div>
+            <p class="fl-hint" id="pmsg" role="status"></p>
           </div>
-          <p id="fl-pmsg" class="font-mono text-[11px] text-muted min-h-[1.2em]"></p>
-        </div>
-      </details>
+        </details>
 
-      <!-- Accordion Section 2: Susunan & Tata Letak -->
-      <details class="group border-t border-line pt-3" open>
-        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
-          <span>{isId ? 'Susunan Kolom & Tampilan' : 'Layout & Display'}</span>
-          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        <div class="mt-3 space-y-3 pb-2 text-xs">
-          <!-- Column presets -->
-          <div>
-            <span class="block text-muted mb-1.5">{isId ? 'Bagi lebar foto menurut kolom:' : 'Fit into columns:'}</span>
-            <div id="fl-presets" class="flex flex-wrap gap-1.5"></div>
-          </div>
-
-          <!-- Fit mode select -->
-          <div>
-            <label for="fl-fit" class="block text-muted mb-1">{isId ? 'Rasio kotak beda dari foto:' : 'When ratio differs:'}</label>
-            <select
-              id="fl-fit"
-              class="w-full rounded-sm border border-line bg-paper px-2.5 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
-            >
-              <option value="contain">{isId ? 'Muat utuh (tanpa terpotong)' : 'Contain (no crop)'}</option>
-              <option value="cover">{isId ? 'Penuhi slot (dipotong tengah)' : 'Cover (fill slot)'}</option>
-            </select>
-          </div>
-
-          <!-- Checkboxes -->
-          <div class="space-y-2 pt-1">
-            <label class="flex items-center gap-2 cursor-pointer text-ink">
-              <input type="checkbox" id="fl-center" checked class="rounded-xs accent-accent" />
-              <span>{isId ? 'Rata tengah tiap baris' : 'Center photos in each row'}</span>
+        <!-- Susunan Section -->
+        <details>
+          <summary>Susunan</summary>
+          <div class="fl-grid">
+            <p class="fl-hint fl-full">Bagi lebar semua foto menurut jumlah kolom:</p>
+            <div class="fl-presets fl-full" id="presets" aria-label="Bagi jadi kolom"></div>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="center" checked /> Rata tengah tiap baris
             </label>
-            <label class="flex items-center gap-2 cursor-pointer text-ink">
-              <input type="checkbox" id="fl-cap" checked class="rounded-xs accent-accent" />
-              <span>{isId ? 'Tampilkan teks keterangan' : 'Show captions'}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer text-ink">
-              <input type="checkbox" id="fl-num" checked class="rounded-xs accent-accent" />
-              <span>{isId ? 'Nomor otomatis (Gambar n.)' : 'Auto number (Figure n.)'}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer text-ink">
-              <input type="checkbox" id="fl-border" class="rounded-xs accent-accent" />
-              <span>{isId ? 'Bingkai tipis di sekeliling foto' : 'Thin border around photos'}</span>
-            </label>
-          </div>
-        </div>
-      </details>
-
-      <!-- Accordion Section 3: Ukuran Semua Foto -->
-      <details class="group border-t border-line pt-3">
-        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
-          <span>{isId ? 'Ukuran Semua Foto' : 'Batch Photo Sizing'}</span>
-          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        <div class="mt-3 space-y-3 pb-2 text-xs">
-          <!-- Step scale buttons -->
-          <div class="flex items-center gap-2">
-            <label for="fl-step" class="text-muted">{isId ? 'Langkah (cm):' : 'Step (cm):'}</label>
-            <input type="number" id="fl-step" min="0.1" step="0.1" value="1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-            <div class="flex gap-1 ml-auto">
-              <button type="button" id="fl-allDec" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink font-mono">−</button>
-              <button type="button" id="fl-allInc" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink font-mono">+</button>
-            </div>
-          </div>
-
-          <!-- Direct size inputs -->
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label for="fl-aw" class="block text-muted mb-1">{isId ? 'Lebar (cm)' : 'Width (cm)'}</label>
-              <input type="number" id="fl-aw" min="0.5" step="0.1" value="4" class="w-full rounded-sm border border-line bg-transparent px-2.5 py-1 text-xs text-ink" />
-            </div>
-            <div>
-              <label for="fl-ah" class="block text-muted mb-1">{isId ? 'Tinggi (cm)' : 'Height (cm)'}</label>
-              <input type="number" id="fl-ah" min="0.5" step="0.1" value="4" class="w-full rounded-sm border border-line bg-transparent px-2.5 py-1 text-xs text-ink" />
-            </div>
-          </div>
-
-          <label class="flex items-center gap-2 cursor-pointer text-ink">
-            <input type="checkbox" id="fl-aforce" class="rounded-xs accent-accent" />
-            <span>{isId ? 'Paksa persis ukuran ini' : 'Force exact dimensions'}</span>
-          </label>
-
-          <button
-            type="button"
-            id="fl-allSet"
-            class="w-full rounded-sm border border-line px-3 py-1.5 text-xs text-ink transition-colors hover:border-accent hover:text-accent"
-          >
-            {isId ? 'Terapkan Ukuran ke Semua Foto' : 'Apply Dimensions to All'}
-          </button>
-        </div>
-      </details>
-
-      <!-- Accordion Section 4: Kertas & Margin -->
-      <details class="group border-t border-line pt-3">
-        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
-          <span>{isId ? 'Kertas & Margin' : 'Paper & Margins'}</span>
-          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        <div class="mt-3 space-y-3 pb-2 text-xs">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label for="fl-paper" class="block text-muted mb-1">{isId ? 'Ukuran Kertas' : 'Paper Size'}</label>
-              <select id="fl-paper" class="w-full rounded-sm border border-line bg-paper px-2 py-1 text-xs text-ink">
-                <option value="A4">A4</option>
-                <option value="Letter">Letter</option>
-                <option value="A5">A5</option>
-                <option value="Custom">{isId ? 'Kustom…' : 'Custom…'}</option>
+            <label class="fl-full">Bila rasio kotak beda dari foto
+              <select id="fit">
+                <option value="contain">Muat utuh (tanpa terpotong)</option>
+                <option value="cover">Penuhi slot (dipotong tengah)</option>
               </select>
+            </label>
+            <label class="fl-chk">
+              <input type="checkbox" id="cap" checked /> Keterangan
+            </label>
+            <label class="fl-chk">
+              <input type="checkbox" id="num" checked /> Nomor “Gambar n.”
+            </label>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="border" /> Bingkai tipis di foto
+            </label>
+          </div>
+        </details>
+
+        <!-- Ukuran Semua Foto Section -->
+        <details>
+          <summary>Ukuran semua foto</summary>
+          <div class="fl-grid">
+            <label>Langkah ubah (cm)<input type="number" id="step" min="0.1" step="0.1" value="1" /></label>
+            <div class="fl-acts" style="align-self:end">
+              <button type="button" id="allDec" aria-label="Kecilkan semua">−</button>
+              <button type="button" id="allInc" aria-label="Besarkan semua">+</button>
             </div>
-            <div>
-              <label for="fl-orient" class="block text-muted mb-1">{isId ? 'Orientasi' : 'Orientation'}</label>
-              <select id="fl-orient" class="w-full rounded-sm border border-line bg-paper px-2 py-1 text-xs text-ink">
-                <option value="p">{isId ? 'Potret' : 'Portrait'}</option>
-                <option value="l">{isId ? 'Lanskap' : 'Landscape'}</option>
+            <label>Lebar (cm)<input type="number" id="aw" min="0.5" step="0.1" value="4" /></label>
+            <label>Tinggi (cm)<input type="number" id="ah" min="0.5" step="0.1" value="4" /></label>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="aforce" /> Paksa persis ukuran ini (rasio boleh berbeda)
+            </label>
+            <button type="button" id="allSet" class="fl-full">Set semua foto ke ukuran ini</button>
+          </div>
+        </details>
+
+        <!-- Kertas Section -->
+        <details>
+          <summary>Kertas</summary>
+          <div class="fl-grid">
+            <label>Ukuran
+              <select id="paper">
+                <option>A4</option>
+                <option>Letter</option>
+                <option>A5</option>
+                <option value="Custom">Kustom…</option>
               </select>
-            </div>
+            </label>
+            <label>Orientasi
+              <select id="orient">
+                <option value="p">Potret</option>
+                <option value="l">Lanskap</option>
+              </select>
+            </label>
+            <label id="cwl" hidden>Lebar (mm)<input type="number" id="pwid" min="30" max="2000" value="210" /></label>
+            <label id="chl" hidden>Tinggi (mm)<input type="number" id="phei" min="30" max="2000" value="297" /></label>
+            <label>Margin (mm)<input type="number" id="margin" min="0" max="50" value="12" /></label>
+            <label>Jarak foto (mm)<input type="number" id="gap" min="0" max="30" value="6" /></label>
           </div>
-
-          <!-- Custom Paper Width & Height -->
-          <div id="fl-custom-dim" class="hidden grid-cols-2 gap-2">
-            <div>
-              <label for="fl-pwid" class="block text-muted mb-1">Lebar (mm)</label>
-              <input type="number" id="fl-pwid" min="30" max="2000" value="210" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-            </div>
-            <div>
-              <label for="fl-phei" class="block text-muted mb-1">Tinggi (mm)</label>
-              <input type="number" id="fl-phei" min="30" max="2000" value="297" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label for="fl-margin" class="block text-muted mb-1">{isId ? 'Margin (mm)' : 'Margin (mm)'}</label>
-              <input type="number" id="fl-margin" min="0" max="50" value="12" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-            </div>
-            <div>
-              <label for="fl-gap" class="block text-muted mb-1">{isId ? 'Jarak Foto (mm)' : 'Photo Gap (mm)'}</label>
-              <input type="number" id="fl-gap" min="0" max="30" value="6" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-            </div>
-          </div>
-        </div>
-      </details>
+        </details>
+      </div>
 
       <!-- Action Footer -->
-      <div class="space-y-3 border-t border-line pt-4">
-        <p id="fl-info" class="font-mono text-xs text-muted min-h-[1.2em]"></p>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            id="fl-pdf"
-            class="flex-1 rounded-sm bg-ink px-4 py-2.5 text-xs font-medium text-paper transition-opacity hover:opacity-90 inline-flex items-center justify-center gap-1.5"
-          >
-            <ToolIcon name="files" size={14} />
-            <span>{isId ? 'Unduh PDF' : 'Download PDF'}</span>
-          </button>
-          <button
-            type="button"
-            id="fl-print"
-            class="rounded-sm border border-line px-4 py-2.5 text-xs text-ink transition-colors hover:border-accent hover:text-accent"
-          >
-            {isId ? 'Cetak' : 'Print'}
-          </button>
+      <div class="fl-foot">
+        <p class="fl-hint" id="info"></p>
+        <div class="fl-acts">
+          <button type="button" class="fl-btn-pri" id="pdf">Unduh PDF</button>
+          <button type="button" id="print">Cetak</button>
         </div>
       </div>
-    </div>
+    </aside>
 
-    <!-- RIGHT PANEL: Live Pages Preview -->
-    <div class="lg:col-span-7">
-      <div class="flex items-center justify-between pb-3">
-        <span class="font-mono text-xs uppercase tracking-wider text-muted">
-          {isId ? 'Pratinjau Lembar Cetak' : 'Printable Sheet Preview'}
-        </span>
-        <span class="font-mono text-[11px] text-muted">
-          {isId ? 'Klik foto untuk crop & edit' : 'Click photo to crop & edit'}
-        </span>
-      </div>
-
-      <!-- Preview container -->
-      <div
-        id="fl-preview"
-        class="flex flex-col items-center gap-8 rounded-sm border border-line bg-ink/[0.02] p-6 sm:p-8 overflow-y-auto max-h-[85vh]"
-      ></div>
-    </div>
+    <!-- RIGHT MAIN: Printable Canvas Preview -->
+    <main id="preview"></main>
   </div>
 
   <!-- INTERACTIVE CROP MODAL DIALOG -->
-  <dialog
-    id="fl-dlg"
-    class="rounded-sm border border-line bg-paper text-ink p-6 shadow-2xl backdrop:bg-black/60 w-full max-w-md"
-  >
-    <div class="flex items-center justify-between pb-2 border-b border-line">
-      <h3 class="font-display text-base font-medium text-ink">
-        {isId ? 'Crop & Edit Foto' : 'Crop & Edit Photo'}
-      </h3>
-      <span id="fl-csz" class="font-mono text-xs text-muted"></span>
+  <dialog id="dlg">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <b>Edit foto</b>
+      <span class="fl-hint" id="csz"></span>
     </div>
-
-    <!-- Aspect ratio chips -->
-    <div id="fl-chips" class="flex flex-wrap gap-1.5 my-3"></div>
-
-    <!-- Canvas Stage -->
-    <div class="flex justify-center rounded-sm bg-ink/[0.04] p-3 border border-line">
-      <canvas id="fl-cv" class="touch-none max-w-full h-auto cursor-crosshair"></canvas>
+    <div class="fl-chips" id="chips"></div>
+    <div class="fl-stage"><canvas id="cv"></canvas></div>
+    <p class="fl-hint" style="margin:8px 0">Geser kotak untuk memindah, tarik tepi atau sudut untuk mengubah ukuran.</p>
+    <div class="fl-sz" style="margin:10px 0 6px">
+      <input type="number" id="ew" min="0.5" step="0.1" aria-label="Lebar (cm)" /> ×
+      <input type="number" id="eh" min="0.5" step="0.1" aria-label="Tinggi (cm)" /> cm
+      <label><input type="checkbox" id="elock" /> Kunci rasio</label>
     </div>
-    <p class="mt-2 text-[11px] text-muted text-center">
-      {isId ? 'Geser kotak untuk memindah, tarik tepi / sudut untuk mengubah ukuran.' : 'Drag box to move, pull corners / edges to resize.'}
-    </p>
-
-    <!-- Dimension Controls -->
-    <div class="mt-3 flex items-center gap-2 text-xs">
-      <label class="text-muted">{isId ? 'Ukuran:' : 'Size:'}</label>
-      <input type="number" id="fl-ew" min="0.5" step="0.1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-      <span>×</span>
-      <input type="number" id="fl-eh" min="0.5" step="0.1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
-      <span>cm</span>
-      <label class="flex items-center gap-1.5 ml-auto cursor-pointer text-ink">
-        <input type="checkbox" id="fl-elock" class="rounded-xs accent-accent" />
-        <span>{isId ? 'Kunci rasio' : 'Lock ratio'}</span>
-      </label>
+    <input type="text" id="ecap" placeholder="Keterangan gambar" style="width:100%" aria-label="Keterangan" />
+    <label class="fl-sz" style="margin:6px 0 0">
+      <input type="checkbox" id="eshow" /> Tampilkan keterangan foto ini
+    </label>
+    <div class="fl-sz" style="margin:8px 0 0">
+      Urutan: <button type="button" id="eprev" aria-label="Maju satu urutan">◀</button>
+      <span id="epos" style="font-family:var(--font-mono,monospace)"></span>
+      <button type="button" id="enext" aria-label="Mundur satu urutan">▶</button>
     </div>
-
-    <!-- Caption Input -->
-    <div class="mt-3 space-y-1.5">
-      <input
-        type="text"
-        id="fl-ecap"
-        placeholder={isId ? 'Keterangan gambar...' : 'Photo caption...'}
-        class="w-full rounded-sm border border-line bg-transparent px-3 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
-      />
-      <label class="flex items-center gap-2 cursor-pointer text-xs text-ink">
-        <input type="checkbox" id="fl-eshow" class="rounded-xs accent-accent" />
-        <span>{isId ? 'Tampilkan keterangan foto ini' : 'Display caption for this photo'}</span>
-      </label>
-    </div>
-
-    <!-- Photo Order Navigation -->
-    <div class="mt-3 flex items-center justify-between border-t border-line/60 pt-3 text-xs">
-      <span class="text-muted">{isId ? 'Urutan:' : 'Order:'}</span>
-      <div class="flex items-center gap-2">
-        <button type="button" id="fl-eprev" class="rounded-sm border border-line px-2 py-0.5 text-xs text-muted hover:text-ink">◀</button>
-        <span id="fl-epos" class="font-mono text-xs text-ink"></span>
-        <button type="button" id="fl-enext" class="rounded-sm border border-line px-2 py-0.5 text-xs text-muted hover:text-ink">▶</button>
-      </div>
-    </div>
-
-    <!-- Dialog Actions -->
-    <div class="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4 text-xs">
-      <button type="button" id="fl-edel" class="rounded-sm border border-red-500/20 px-2.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10">
-        {isId ? 'Hapus' : 'Delete'}
-      </button>
-      <div class="flex gap-2">
-        <button type="button" id="fl-reset" class="rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted hover:text-ink">
-          {isId ? 'Reset' : 'Reset'}
-        </button>
-        <button type="button" id="fl-skip" class="rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted hover:text-ink">
-          {isId ? 'Batal' : 'Cancel'}
-        </button>
-        <button type="button" id="fl-ok" class="rounded-sm bg-ink px-3 py-1.5 text-xs font-medium text-paper hover:opacity-90">
-          {isId ? 'Simpan' : 'Save'}
-        </button>
-      </div>
+    <div class="fl-acts" style="margin-top:14px">
+      <button id="edel" type="button" style="color:#ef4444;border-color:currentColor">Hapus foto</button>
+      <button id="reset" type="button">Reset</button>
+      <button id="skip" type="button">Batal</button>
+      <button id="ok" type="button" class="fl-btn-pri">Simpan crop</button>
     </div>
   </dialog>
 </div>
 
 <style>
+  .fl-workspace {
+    --fl-bg: var(--color-paper, #fafafa);
+    --fl-panel: var(--color-paper, #ffffff);
+    --fl-field: var(--color-paper, #ffffff);
+    --fl-ink: var(--color-ink, #18181b);
+    --fl-mute: var(--color-muted, #6f6f77);
+    --fl-line: var(--color-line, #e4e4e7);
+    --fl-acc: var(--color-accent, #3056d3);
+    --fl-acc-ink: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [data-theme="dark"] .fl-workspace {
+    --fl-bg: #131316;
+    --fl-panel: #18181b;
+    --fl-field: #131316;
+    --fl-ink: #ececee;
+    --fl-mute: #94949c;
+    --fl-line: #2c2c31;
+    --fl-acc: #7d9aff;
+    --fl-acc-ink: #0b0f19;
+  }
+
+  .fl-app {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    height: 780px;
+    max-height: 85vh;
+    overflow: hidden;
+    background: var(--fl-bg);
+    color: var(--fl-ink);
+  }
+
+  .fl-side {
+    background: var(--fl-panel);
+    border-right: 1px solid var(--fl-line);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .fl-top {
+    padding: 18px 20px 10px;
+  }
+  .fl-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .fl-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 0 20px 12px;
+  }
+
+  .fl-foot {
+    padding: 12px 20px;
+    border-top: 1px solid var(--fl-line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--fl-panel);
+  }
+
+  .fl-acts {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fl-acts button {
+    flex: 1;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    background: transparent;
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover {
+    border-color: var(--fl-acc);
+  }
+  button.fl-btn-pri {
+    background: var(--fl-acc);
+    color: var(--fl-acc-ink);
+    border-color: var(--fl-acc);
+    font-weight: 500;
+  }
+
+  input, select, textarea {
+    background: var(--fl-field);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 5px 8px;
+    min-width: 0;
+    font-size: 13px;
+  }
+  input[type=checkbox] {
+    accent-color: var(--fl-acc);
+    width: 15px;
+    height: 15px;
+    padding: 0;
+  }
+
+  .fl-hint {
+    color: var(--fl-mute);
+    font-size: 12px;
+    margin: 0;
+  }
+  .fl-full {
+    grid-column: 1 / -1;
+  }
+
+  .fl-drop {
+    display: block;
+    border: 1px dashed var(--fl-mute);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: border-color 0.15s ease;
+  }
+  .fl-drop input {
+    display: none;
+  }
+  .fl-drop small {
+    display: block;
+    font-weight: 400;
+    color: var(--fl-mute);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .fl-drop:hover, .fl-drop.over {
+    border-color: var(--fl-acc);
+    background: color-mix(in srgb, var(--fl-acc) 6%, transparent);
+  }
+
+  #msg {
+    color: var(--fl-mute);
+    font-size: 12px;
+    margin: 6px 0 0;
+    min-height: 1.4em;
+  }
+
+  details {
+    border-top: 1px solid var(--fl-line);
+  }
+  details:first-of-type {
+    margin-top: 8px;
+  }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::after {
+    content: "+";
+    color: var(--fl-mute);
+    font-weight: 400;
+  }
+  details[open] summary::after {
+    content: "−";
+  }
+
+  .fl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+  .fl-grid > * {
+    min-width: 0;
+  }
+  .fl-grid input:not([type=checkbox]), .fl-grid select {
+    width: 100%;
+  }
+  .fl-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--fl-mute);
+    font-size: 12px;
+  }
+  .fl-grid label.fl-chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    color: var(--fl-ink);
+    font-size: 13px;
+  }
+  .fl-grid > button {
+    padding: 6px;
+  }
+
+  .fl-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fl-presets button, .fl-chips button {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  .fl-pset {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 14px;
+  }
+  .fl-plist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .prow {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .prow .pn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 5px 8px;
+  }
+  .prow .pn small {
+    color: var(--fl-mute);
+    font-size: 11px;
+  }
+  .prow .ic {
+    padding: 4px 6px;
+    font-size: 11px;
+    flex: none;
+  }
+  .fl-plist > .ic {
+    align-self: flex-start;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .fl-save {
+    display: grid;
+    gap: 6px;
+  }
+  .fl-save input, .fl-save select {
+    width: 100%;
+  }
+
+  #pbox {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #ptext {
+    width: 100%;
+    font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace;
+    resize: vertical;
+    background: var(--fl-field);
+    color: var(--fl-ink);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 6px;
+  }
+
+  #preview {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    overflow-y: auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+    background: color-mix(in srgb, var(--fl-line) 25%, var(--fl-bg));
+  }
+  .fl-pg {
+    width: min(100%, 600px);
+    flex: none;
+  }
+  .fl-pg canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px var(--fl-line), 0 4px 14px rgba(0, 0, 0, 0.08);
+  }
+  .fl-lab {
+    text-align: center;
+    color: var(--fl-mute);
+    font-size: 12px;
+    font-family: var(--font-mono, monospace);
+    margin-top: 6px;
+  }
+
+  dialog#dlg {
+    border: 1px solid var(--fl-line);
+    background: var(--fl-panel);
+    color: var(--fl-ink);
+    border-radius: 6px;
+    padding: 16px;
+    width: min(94vw, 420px);
+  }
+  dialog#dlg::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .fl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 8px 0;
+  }
+  .fl-chips button.on {
+    background: var(--fl-acc);
+    color: var(--fl-acc-ink);
+    border-color: var(--fl-acc);
+  }
+  .fl-stage {
+    display: grid;
+    place-items: center;
+    background: var(--fl-bg);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 8px;
+  }
+  #cv {
+    touch-action: none;
+    max-width: 100%;
+    height: auto;
+  }
+  .fl-sz {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+  .fl-sz input[type=number] {
+    width: 65px;
+  }
+  .fl-sz input[type=text] {
+    width: 100%;
+  }
+  .fl-sz label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+  }
+
+  @media (max-width: 860px) {
+    .fl-app {
+      grid-template-columns: minmax(0, 1fr);
+      height: auto;
+      max-height: none;
+    }
+    .fl-side {
+      border-right: 0;
+      border-bottom: 1px solid var(--fl-line);
+    }
+    #preview {
+      max-height: 70vh;
+    }
+  }
+
   @media print {
-    :global(header), :global(nav), :global(footer), :global(.share-btn), :global(.theme-toggle) {
+    :global(html), :global(body) {
+      background: #fff !important;
+      height: auto !important;
+    }
+    :global(header), :global(nav), :global(footer), :global(.share-btn), :global(.theme-toggle), :global(article > nav), :global(article > h1), :global(article > div:first-of-type), :global(article > p:first-of-type) {
       display: none !important;
     }
-    :global(body) {
-      background: #fff !important;
-      color: #000 !important;
+    :global(article) {
+      max-width: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .fl-workspace {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .fl-side, .fl-lab {
+      display: none !important;
+    }
+    .fl-app {
+      display: block !important;
       height: auto !important;
       overflow: visible !important;
     }
-    :global(main) {
-      display: block !important;
+    #preview {
       padding: 0 !important;
-      margin: 0 !important;
-    }
-    .foto-laporan-root > .grid > div:first-child {
-      display: none !important;
-    }
-    .foto-laporan-root > .grid > div:last-child {
+      gap: 0 !important;
       display: block !important;
-      width: 100% !important;
-      grid-column: 1 / -1 !important;
-    }
-    #fl-preview {
-      border: none !important;
-      background: transparent !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      max-height: none !important;
       overflow: visible !important;
-      display: block !important;
+      background: transparent !important;
     }
-    :global(.fl-pg) {
-      width: 100% !important;
-      max-width: none !important;
-      page-break-after: always !important;
+    .fl-pg {
+      width: calc(var(--pw) * 1mm) !important;
       break-after: page !important;
+      page-break-after: always !important;
     }
-    :global(.fl-pg:last-child) {
-      page-break-after: auto !important;
+    .fl-pg:last-child {
       break-after: auto !important;
+      page-break-after: auto !important;
     }
-    :global(.fl-pg canvas) {
+    .fl-pg canvas {
       box-shadow: none !important;
-      border: none !important;
-    }
-    :global(.fl-lab) {
-      display: none !important;
     }
   }
 </style>
 
 <script>
-  function initFotoLaporan() {
-    const root = document.querySelector('.foto-laporan-root');
-    if (!root || root.getAttribute('data-fl-initialized') === 'true') return;
-    root.setAttribute('data-fl-initialized', 'true');
+  function setupFotoLaporan() {
+    const root = document.querySelector('.fl-workspace');
+    if (!root) return;
 
+    // Scoped query selector to this container
     const $ = (s: string) => root.querySelector(s) as HTMLElement;
     const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
     const PAPERS: Record<string, [number, number]> = { A4: [210, 297], Letter: [216, 279], A5: [148, 210] };
 
-    interface FotoItem {
-      id: number;
-      src: HTMLImageElement;
-      rect: { x: number; y: number; w: number; h: number };
-      bmp: HTMLCanvasElement;
-      thumb: string;
-      cap: string;
-      w: number;
-      h: number;
-      lock: boolean;
-      showCap: boolean;
-    }
-
-    interface State {
-      items: FotoItem[];
-      uid: number;
-      paper: string;
-      land: boolean;
-      custom: { w: number; h: number };
-      m: number;
-      g: number;
-      step: number;
-      center: boolean;
-      fit: 'contain' | 'cover';
-      cap: boolean;
-      num: boolean;
-      border: boolean;
-    }
-
-    const st: State = {
-      items: [],
+    const st = {
+      items: [] as any[],
       uid: 1,
       paper: 'A4',
       land: false,
@@ -491,20 +653,18 @@ const isId = lang === 'id';
       return st.land ? [h, w] : [w, h];
     };
 
-    /* ---------- Image Processing ---------- */
-    function makeBmp(im: HTMLImageElement, f: { x: number; y: number; w: number; h: number }): HTMLCanvasElement {
+    /* ---------- Gambar ---------- */
+    function makeBmp(im: HTMLImageElement, f: { x: number; y: number; w: number; h: number }) {
       const sx = f.x * im.width, sy = f.y * im.height, sw = f.w * im.width, sh = f.h * im.height;
-      const s = Math.min(1, 2400 / Math.max(sw, sh));
-      const c = document.createElement('canvas');
+      const s = Math.min(1, 2400 / Math.max(sw, sh)), c = document.createElement('canvas');
       c.width = Math.max(1, Math.round(sw * s));
       c.height = Math.max(1, Math.round(sh * s));
       c.getContext('2d')?.drawImage(im, sx, sy, sw, sh, 0, 0, c.width, c.height);
       return c;
     }
 
-    function thumb(c: HTMLCanvasElement): string {
-      const s = 112 / Math.max(c.width, c.height);
-      const t = document.createElement('canvas');
+    function thumb(c: HTMLCanvasElement) {
+      const s = 112 / Math.max(c.width, c.height), t = document.createElement('canvas');
       t.width = Math.max(1, Math.round(c.width * s));
       t.height = Math.max(1, Math.round(c.height * s));
       t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
@@ -520,7 +680,8 @@ const isId = lang === 'id';
       });
 
     const fitBox = (a: number, W: number, H: number): [number, number] => (a >= W / H ? [W, W / a] : [H * a, H]);
-    function scaleItem(it: FotoItem, d: number) {
+
+    function scaleItem(it: any, d: number) {
       const w = Math.max(0.5, it.w + d);
       it.h = (it.h * w) / it.w;
       it.w = w;
@@ -535,12 +696,11 @@ const isId = lang === 'id';
           bad++;
           continue;
         }
-        const rect = { x: 0, y: 0, w: 1, h: 1 };
-        const bmp = makeBmp(im, rect);
+        const rect = { x: 0, y: 0, w: 1, h: 1 }, bmp = makeBmp(im, rect);
         const [w, h] = fitBox(bmp.width / bmp.height, 8, 8);
         st.items.push({ id: st.uid++, src: im, rect, bmp, thumb: thumb(bmp), cap: '', w, h, lock: true, showCap: true });
       }
-      const msg = $('#fl-msg');
+      const msg = $('#msg');
       if (msg) {
         msg.textContent = !list.length
           ? 'File harus berupa gambar.'
@@ -551,38 +711,32 @@ const isId = lang === 'id';
       schedule();
     }
 
-    const fileInput = $('#fl-file') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.addEventListener('change', (e) => {
-        const t = e.target as HTMLInputElement;
-        if (t.files) addFiles(t.files);
-        t.value = '';
-      });
-    }
+    const fileEl = $('#file') as HTMLInputElement;
+    fileEl?.addEventListener('change', (e: any) => {
+      addFiles(e.target.files);
+      e.target.value = '';
+    });
 
-    const drop = $('#fl-drop');
+    const drop = $('#drop');
     if (drop) {
       ['dragenter', 'dragover'].forEach((t) =>
-        drop.addEventListener(t, (e) => {
+        drop.addEventListener(t, (e: any) => {
           e.preventDefault();
-          drop.classList.add('border-accent');
+          drop.classList.add('over');
         })
       );
       ['dragleave', 'drop'].forEach((t) =>
-        drop.addEventListener(t, (e) => {
+        drop.addEventListener(t, (e: any) => {
           e.preventDefault();
-          drop.classList.remove('border-accent');
+          drop.classList.remove('over');
         })
       );
-      drop.addEventListener('drop', (e) => {
-        const dt = (e as DragEvent).dataTransfer;
-        if (dt?.files) addFiles(dt.files);
-      });
+      drop.addEventListener('drop', (e: any) => addFiles(e.dataTransfer.files));
     }
 
-    /* ---------- Crop Dialog & Interactive Canvas ---------- */
-    const dlg = $('#fl-dlg') as HTMLDialogElement;
-    const cv = $('#fl-cv') as HTMLCanvasElement;
+    /* ---------- Crop ---------- */
+    const dlg = $('#dlg') as HTMLDialogElement;
+    const cv = $('#cv') as HTMLCanvasElement;
     const VP = 340, MIN = 24;
     const RATIOS: [string, number][] = [
       ['Bebas', 0],
@@ -593,24 +747,17 @@ const isId = lang === 'id';
       ['3:4', 3 / 4],
       ['2:3', 2 / 3],
     ];
+    let cr: any = null, drag: any = null;
 
-    let cr: any = null;
-    let drag: any = null;
-
-    function openCrop(it: FotoItem): Promise<any> {
+    function openCrop(it: any): Promise<any> {
       return new Promise((res) => {
-        const im = it.src;
-        const sc = Math.min(VP / im.width, VP / im.height);
-        const W = Math.round(im.width * sc);
-        const H = Math.round(im.height * sc);
-        const f = it.rect;
+        const im = it.src, sc = Math.min(VP / im.width, VP / im.height), W = Math.round(im.width * sc), H = Math.round(im.height * sc), f = it.rect;
         cr = { im, sc, W, H, ratio: 0, res, r: { x: f.x * W, y: f.y * H, w: f.w * W, h: f.h * H } };
-
-        ($('#fl-ew') as HTMLInputElement).value = String(+it.w.toFixed(2));
-        ($('#fl-eh') as HTMLInputElement).value = String(+it.h.toFixed(2));
-        ($('#fl-elock') as HTMLInputElement).checked = it.lock;
-        ($('#fl-ecap') as HTMLInputElement).value = it.cap;
-        ($('#fl-eshow') as HTMLInputElement).checked = it.showCap;
+        ($('#ew') as HTMLInputElement).value = String(+it.w.toFixed(2));
+        ($('#eh') as HTMLInputElement).value = String(+it.h.toFixed(2));
+        ($('#elock') as HTMLInputElement).checked = it.lock;
+        ($('#ecap') as HTMLInputElement).value = it.cap;
+        ($('#eshow') as HTMLInputElement).checked = it.showCap;
         cr.pos = st.items.indexOf(it);
         showPos();
         renderChips();
@@ -620,12 +767,12 @@ const isId = lang === 'id';
     }
 
     function renderChips() {
-      const chips = $('#fl-chips');
-      if (!chips) return;
-      chips.innerHTML = RATIOS.map(([n, v]) => {
-        const on = cr && cr.ratio === v;
-        return `<button type="button" data-v="${v}" class="rounded-sm border px-2 py-0.5 text-xs transition-colors ${on ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}">${n}</button>`;
-      }).join('');
+      const chips = $('#chips');
+      if (chips) {
+        chips.innerHTML = RATIOS.map(
+          ([n, v]) => `<button type="button" data-v="${v}" class="${cr.ratio === v ? 'on' : ''}">${n}</button>`
+        ).join('');
+      }
     }
 
     function cfinish(v: any) {
@@ -636,70 +783,83 @@ const isId = lang === 'id';
       r(v);
     }
 
-    dlg.addEventListener('close', () => cfinish(null));
-    $('#fl-skip').onclick = () => cfinish(null);
-    $('#fl-reset').onclick = () => {
-      cr.r = { x: 0, y: 0, w: cr.W, h: cr.H };
-      cr.ratio = 0;
-      renderChips();
-      cdraw();
-    };
+    dlg?.addEventListener('close', () => cfinish(null));
+    const skipBtn = $('#skip');
+    if (skipBtn) skipBtn.onclick = () => cfinish(null);
+
+    const resetBtn = $('#reset');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        cr.r = { x: 0, y: 0, w: cr.W, h: cr.H };
+        cr.ratio = 0;
+        renderChips();
+        cdraw();
+      };
+    }
 
     const showPos = () => {
-      const epos = $('#fl-epos');
+      const epos = $('#epos');
       if (epos && cr) epos.textContent = `${cr.pos + 1} dari ${st.items.length}`;
     };
 
-    $('#fl-eprev').onclick = () => {
-      if (cr) {
+    const eprev = $('#eprev');
+    if (eprev) {
+      eprev.onclick = () => {
         cr.pos = Math.max(0, cr.pos - 1);
         showPos();
-      }
-    };
-    $('#fl-enext').onclick = () => {
-      if (cr) {
+      };
+    }
+
+    const enext = $('#enext');
+    if (enext) {
+      enext.onclick = () => {
         cr.pos = Math.min(st.items.length - 1, cr.pos + 1);
         showPos();
-      }
-    };
+      };
+    }
 
     function syncSize(k: 'w' | 'h') {
-      const elock = $('#fl-elock') as HTMLInputElement;
+      const elock = $('#elock') as HTMLInputElement;
       if (!cr || !elock.checked) return;
       const a = cr.r.w / cr.r.h;
-      const ew = $('#fl-ew') as HTMLInputElement;
-      const eh = $('#fl-eh') as HTMLInputElement;
+      const ew = $('#ew') as HTMLInputElement;
+      const eh = $('#eh') as HTMLInputElement;
       if (k === 'w') eh.value = String(+(+ew.value / a).toFixed(2));
       else ew.value = String(+(+eh.value * a).toFixed(2));
     }
 
-    $('#fl-ew').addEventListener('input', () => syncSize('w'));
-    $('#fl-eh').addEventListener('input', () => syncSize('h'));
-    $('#fl-elock').addEventListener('change', () => syncSize('w'));
+    $('#ew')?.addEventListener('input', () => syncSize('w'));
+    $('#eh')?.addEventListener('input', () => syncSize('h'));
+    $('#elock')?.addEventListener('change', () => syncSize('w'));
 
-    $('#fl-edel').onclick = () => cfinish({ del: true });
-    $('#fl-ok').onclick = () => {
-      const { r, W, H } = cr;
-      const lock = ($('#fl-elock') as HTMLInputElement).checked;
-      const ew = $('#fl-ew') as HTMLInputElement;
-      const eh = $('#fl-eh') as HTMLInputElement;
-      const w = Math.max(0.5, +ew.value || 0.5);
-      const h = lock ? (w * r.h) / r.w : Math.max(0.5, +eh.value || 0.5);
-      cfinish({
-        rect: { x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H },
-        w,
-        h,
-        lock,
-        cap: ($('#fl-ecap') as HTMLInputElement).value,
-        showCap: ($('#fl-eshow') as HTMLInputElement).checked,
-        pos: cr.pos,
-      });
-    };
+    const edel = $('#edel');
+    if (edel) edel.onclick = () => cfinish({ del: true });
 
-    $('#fl-chips').addEventListener('click', (e) => {
-      const b = (e.target as HTMLElement).closest('button');
+    const okBtn = $('#ok');
+    if (okBtn) {
+      okBtn.onclick = () => {
+        const { r, W, H } = cr;
+        const lock = ($('#elock') as HTMLInputElement).checked;
+        const ew = $('#ew') as HTMLInputElement;
+        const eh = $('#eh') as HTMLInputElement;
+        const w = Math.max(0.5, +ew.value || 0.5);
+        const h = lock ? (w * r.h) / r.w : Math.max(0.5, +eh.value || 0.5);
+        cfinish({
+          rect: { x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H },
+          w,
+          h,
+          lock,
+          cap: ($('#ecap') as HTMLInputElement).value,
+          showCap: ($('#eshow') as HTMLInputElement).checked,
+          pos: cr.pos,
+        });
+      };
+    }
+
+    $('#chips')?.addEventListener('click', (e: any) => {
+      const b = e.target.closest('button');
       if (!b) return;
-      const v = +b.dataset.v!, r = cr.r;
+      const v = +b.dataset.v, r = cr.r;
       cr.ratio = v;
       if (v) {
         const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
@@ -713,7 +873,6 @@ const isId = lang === 'id';
     });
 
     function cdraw() {
-      if (!cr) return;
       const { W, H, r, im } = cr;
       cv.width = W;
       cv.height = H;
@@ -724,7 +883,7 @@ const isId = lang === 'id';
       c.fillRect(0, r.y + r.h, W, H - r.y - r.h);
       c.fillRect(0, r.y, r.x, r.h);
       c.fillRect(r.x + r.w, r.y, W - r.x - r.w, r.h);
-      c.strokeStyle = '#3056d3';
+      c.strokeStyle = '#fff';
       c.lineWidth = 2;
       c.strokeRect(r.x, r.y, r.w, r.h);
       c.fillStyle = '#fff';
@@ -733,12 +892,12 @@ const isId = lang === 'id';
           if (px !== r.x + r.w / 2 || py !== r.y + r.h / 2) c.fillRect(px - 4, py - 4, 8, 8);
         }
       }
-      const csz = $('#fl-csz');
+      const csz = $('#csz');
       if (csz) csz.textContent = `${Math.round(r.w / cr.sc)} × ${Math.round(r.h / cr.sc)} px`;
-      const elock = $('#fl-elock') as HTMLInputElement;
-      if (elock.checked) {
-        const ew = $('#fl-ew') as HTMLInputElement;
-        const eh = $('#fl-eh') as HTMLInputElement;
+      const elock = $('#elock') as HTMLInputElement;
+      if (elock?.checked) {
+        const ew = $('#ew') as HTMLInputElement;
+        const eh = $('#eh') as HTMLInputElement;
         eh.value = String(+(+ew.value * r.h / r.w).toFixed(2));
       }
     }
@@ -748,12 +907,10 @@ const isId = lang === 'id';
       return [((e.clientX - b.left) * cr.W) / b.width, ((e.clientY - b.top) * cr.H) / b.height];
     };
 
-    cv.addEventListener('pointerdown', (e) => {
-      if (!cr) return;
+    cv?.addEventListener('pointerdown', (e: any) => {
       const [px, py] = cpos(e), r = cr.r, T = 14;
       const near = (a: number, b: number) => Math.abs(a - b) < T;
-      const inX = px >= r.x - T && px <= r.x + r.w + T;
-      const inY = py >= r.y - T && py <= r.y + r.h + T;
+      const inX = px >= r.x - T && px <= r.x + r.w + T, inY = py >= r.y - T && py <= r.y + r.h + T;
       const f = {
         l: inY && near(px, r.x),
         r: inY && near(px, r.x + r.w) && !near(px, r.x),
@@ -766,8 +923,8 @@ const isId = lang === 'id';
       cv.setPointerCapture(e.pointerId);
     });
 
-    cv.addEventListener('pointermove', (e) => {
-      if (!drag || !cr) return;
+    cv?.addEventListener('pointermove', (e: any) => {
+      if (!drag) return;
       const [px, py] = cpos(e), dx = px - drag.px, dy = py - drag.py;
       const { W, H } = cr, o = drag.r0, f = drag.f;
       if (drag.move) {
@@ -796,12 +953,12 @@ const isId = lang === 'id';
       cdraw();
     });
 
-    cv.addEventListener('pointerup', () => {
+    cv?.addEventListener('pointerup', () => {
       drag = null;
     });
 
-    /* ---------- Layout Engine & Pagination ---------- */
-    function wrap(c: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+    /* ---------- Tata Letak & Gambar Halaman ---------- */
+    function wrap(c: CanvasRenderingContext2D, text: string, maxW: number) {
       const out: string[] = [];
       let line = '';
       for (const w of text.split(/\s+/)) {
@@ -817,10 +974,10 @@ const isId = lang === 'id';
 
     const FS = 3.5, LH = FS * 1.3, CAPW = 28;
     const mctx = document.createElement('canvas').getContext('2d')!;
-    const capText = (it: FotoItem, no: number) =>
+    const capText = (it: any, no: number) =>
       st.cap && it.showCap ? ((st.num ? `Gambar ${no}. ` : '') + it.cap).trim() : '';
 
-    function makeCell(it: FotoItem, no: number, s: number) {
+    function makeCell(it: any, no: number, s: number) {
       const w = it.w * 10 * s, h = it.h * 10 * s, txt = capText(it, no), cw = txt ? Math.max(w, CAPW) : w;
       mctx.font = `${FS * 10}px Arial,Helvetica,sans-serif`;
       const lines = txt ? wrap(mctx, txt, cw * 10).slice(0, 3) : [];
@@ -890,26 +1047,26 @@ const isId = lang === 'id';
       p.lines.forEach((l: string, i: number) => c.fillText(l, (p.x + p.cw / 2) * k, (p.by + p.h + 1.5 + i * LH) * k));
     }
 
-    function paintPage(cv: HTMLCanvasElement, list: any[], pw: number, ph: number, dpi: number) {
+    function paintPage(cvEl: HTMLCanvasElement, list: any[], pw: number, ph: number, dpi: number) {
       const k = dpi / 25.4;
-      cv.width = Math.round(pw * k);
-      cv.height = Math.round(ph * k);
-      const c = cv.getContext('2d')!;
+      cvEl.width = Math.round(pw * k);
+      cvEl.height = Math.round(ph * k);
+      const c = cvEl.getContext('2d')!;
       c.fillStyle = '#fff';
-      c.fillRect(0, 0, cv.width, cv.height);
+      c.fillRect(0, 0, cvEl.width, cvEl.height);
       if (!list.length) {
         c.fillStyle = '#8a96a3';
         c.font = `${4.5 * k}px Arial,sans-serif`;
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.fillText('Belum ada foto. Unggah foto di panel kiri.', cv.width / 2, cv.height / 2);
+        c.fillText('Belum ada foto. Unggah foto di panel kiri.', cvEl.width / 2, cvEl.height / 2);
         return;
       }
       list.forEach((p) => paintCell(c, k, p));
     }
 
     let lastL: any = null;
-    async function editItem(it: FotoItem) {
+    async function editItem(it: any) {
       const r = await openCrop(it);
       if (!r) return;
       if (r.del) st.items = st.items.filter((x) => x !== it);
@@ -946,92 +1103,105 @@ const isId = lang === 'id';
 
     function renderPages() {
       const L = layout();
-      const box = $('#fl-preview');
+      const box = $('#preview');
       const arr = L.pages.length ? L.pages : [[]];
       const top = box.scrollTop;
       lastL = L;
+      const pgStyle = document.getElementById('pg');
+      if (pgStyle) pgStyle.textContent = `@page{size:${L.pw}mm ${L.ph}mm;margin:0}`;
+      box.style.setProperty('--pw', String(L.pw));
       box.innerHTML = arr
         .map(
           (_, i) =>
-            `<div class="fl-pg w-full max-w-[620px] shrink-0"><canvas class="w-full h-auto bg-white shadow-sm border border-line"></canvas><div class="fl-lab font-mono text-xs text-center text-muted mt-2">Halaman ${i + 1} dari ${arr.length}</div></div>`
+            `<div class="fl-pg"><canvas></canvas><div class="fl-lab">Halaman ${i + 1} dari ${arr.length}</div></div>`
         )
         .join('');
-      box.querySelectorAll('canvas').forEach((c, i) => {
-        paintPage(c, arr[i], L.pw, L.ph, 150);
+      box.querySelectorAll('canvas').forEach((cvEl, i) => {
+        paintPage(cvEl, arr[i], L.pw, L.ph, 150);
         if (L.pages.length) {
-          c.style.cursor = 'pointer';
-          c.title = 'Klik foto untuk mengedit';
-          c.onclick = (ev) => pickAt(ev, i);
+          cvEl.style.cursor = 'pointer';
+          cvEl.title = 'Klik foto untuk mengedit';
+          cvEl.onclick = (ev) => pickAt(ev, i);
         }
       });
       box.scrollTop = top;
-      const info = $('#fl-info');
+      const info = $('#info');
       if (info) info.textContent = st.items.length ? `${st.items.length} foto di ${L.pages.length} halaman.` : '';
     }
 
-    /* ---------- Settings & Presets Handlers ---------- */
-    const presetsDiv = $('#fl-presets');
-    if (presetsDiv) {
-      presetsDiv.innerHTML = [1, 2, 3, 4]
-        .map((n) => `<button type="button" data-n="${n}" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-accent hover:text-accent">${n} kolom</button>`)
-        .join('');
-      presetsDiv.addEventListener('click', (e) => {
-        const b = (e.target as HTMLElement).closest('button');
+    /* ---------- Pengaturan ---------- */
+    const presetsEl = $('#presets');
+    if (presetsEl) {
+      presetsEl.innerHTML = [1, 2, 3, 4].map((n) => `<button type="button" data-n="${n}">${n} kolom</button>`).join('');
+      presetsEl.addEventListener('click', (e: any) => {
+        const b = e.target.closest('button');
         if (!b) return;
-        setCols(+b.dataset.n!);
+        setCols(+b.dataset.n);
         schedule();
       });
     }
 
     const bind = (id: string, fn: (t: any) => void) =>
-      $('#' + id)?.addEventListener('input', (e) => {
+      $('#' + id)?.addEventListener('input', (e: any) => {
         fn(e.target);
         schedule();
       });
 
-    bind('fl-center', (t) => (st.center = t.checked));
-    $('#fl-step')?.addEventListener('input', (e) => {
-      st.step = Math.max(0.1, +(e.target as HTMLInputElement).value || 1);
+    bind('center', (t) => (st.center = t.checked));
+    $('#step')?.addEventListener('input', (e: any) => {
+      st.step = Math.max(0.1, +e.target.value || 1);
     });
-    $('#fl-allDec').onclick = () => {
-      st.items.forEach((it) => scaleItem(it, -st.step));
-      schedule();
-    };
-    $('#fl-allInc').onclick = () => {
-      st.items.forEach((it) => scaleItem(it, st.step));
-      schedule();
-    };
-    $('#fl-allSet').onclick = () => {
-      const aw = $('#fl-aw') as HTMLInputElement;
-      const ah = $('#fl-ah') as HTMLInputElement;
-      const aforce = $('#fl-aforce') as HTMLInputElement;
-      setBox(Math.max(0.5, +aw.value || 4), Math.max(0.5, +ah.value || 4), aforce.checked);
-      schedule();
-    };
-    bind('fl-fit', (t) => (st.fit = t.value));
-    bind('fl-cap', (t) => (st.cap = t.checked));
-    bind('fl-num', (t) => (st.num = t.checked));
-    bind('fl-border', (t) => (st.border = t.checked));
-    bind('fl-margin', (t) => (st.m = clamp(+t.value || 0, 0, 50)));
-    bind('fl-gap', (t) => (st.g = clamp(+t.value || 0, 0, 30)));
-    bind('fl-orient', (t) => (st.land = t.value === 'l'));
-    bind('fl-paper', (t) => {
+
+    const allDec = $('#allDec');
+    if (allDec) {
+      allDec.onclick = () => {
+        st.items.forEach((it) => scaleItem(it, -st.step));
+        schedule();
+      };
+    }
+
+    const allInc = $('#allInc');
+    if (allInc) {
+      allInc.onclick = () => {
+        st.items.forEach((it) => scaleItem(it, st.step));
+        schedule();
+      };
+    }
+
+    const allSet = $('#allSet');
+    if (allSet) {
+      allSet.onclick = () => {
+        const aw = $('#aw') as HTMLInputElement;
+        const ah = $('#ah') as HTMLInputElement;
+        const aforce = $('#aforce') as HTMLInputElement;
+        setBox(Math.max(0.5, +aw.value || 4), Math.max(0.5, +ah.value || 4), aforce.checked);
+        schedule();
+      };
+    }
+
+    bind('fit', (t) => (st.fit = t.value));
+    bind('cap', (t) => (st.cap = t.checked));
+    bind('num', (t) => (st.num = t.checked));
+    bind('border', (t) => (st.border = t.checked));
+    bind('margin', (t) => (st.m = clamp(+t.value || 0, 0, 50)));
+    bind('gap', (t) => (st.g = clamp(+t.value || 0, 0, 30)));
+    bind('orient', (t) => (st.land = t.value === 'l'));
+    bind('paper', (t) => {
       st.paper = t.value;
-      const customDim = $('#fl-custom-dim');
-      if (customDim) {
-        if (st.paper === 'Custom') customDim.classList.replace('hidden', 'grid');
-        else customDim.classList.replace('grid', 'hidden');
-      }
+      const cwl = $('#cwl');
+      const chl = $('#chl');
+      if (cwl && chl) cwl.hidden = chl.hidden = st.paper !== 'Custom';
     });
-    bind('fl-pwid', (t) => {
+    bind('pwid', (t) => {
       const v = +t.value;
       if (v >= 30 && v <= 2000) st.custom.w = v;
     });
-    bind('fl-phei', (t) => {
+    bind('phei', (t) => {
       const v = +t.value;
       if (v >= 30 && v <= 2000) st.custom.h = v;
     });
 
+    /* ---------- Preset ---------- */
     function setCols(n: number) {
       const [pw] = paper(), W = Math.max(0.5, (pw - 2 * st.m - (n - 1) * st.g) / n / 10 - 0.01);
       for (const it of st.items) {
@@ -1040,6 +1210,7 @@ const isId = lang === 'id';
         it.lock = true;
       }
     }
+
     function setBox(W: number, H: number, force: boolean) {
       for (const it of st.items) {
         if (force) {
@@ -1054,13 +1225,58 @@ const isId = lang === 'id';
     }
 
     const PKEY = 'fotolaporan.presets';
+    const BASE = {
+      paper: 'A4',
+      land: false,
+      custom: { w: 210, h: 297 },
+      m: 12,
+      g: 6,
+      fit: 'contain',
+      cap: true,
+      num: true,
+      border: false,
+      center: true,
+    };
+
     const say = (t: string) => {
-      const pmsg = $('#fl-pmsg');
+      const pmsg = $('#pmsg');
       if (pmsg) pmsg.textContent = t;
     };
     const fmtN = (n: number) => String(+(+n).toFixed(2));
-    const esc = (t: string) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c));
+    const esc = (t: string) =>
+      String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c));
     const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preset';
+    const nv = (v: any, a: number, z: number, d: number) => {
+      const n = parseFloat(v);
+      return clamp(Number.isFinite(n) ? n : d, a, z);
+    };
+
+    function cleanSettings(x: any) {
+      x = x || {};
+      return {
+        paper: ['A4', 'Letter', 'A5', 'Custom'].includes(x.paper) ? x.paper : BASE.paper,
+        land: !!x.land,
+        custom: { w: nv(x.custom && x.custom.w, 30, 2000, 210), h: nv(x.custom && x.custom.h, 30, 2000, 297) },
+        m: nv(x.m, 0, 50, BASE.m),
+        g: nv(x.g, 0, 30, BASE.g),
+        fit: x.fit === 'cover' ? 'cover' : 'contain',
+        cap: x.cap !== false,
+        num: x.num !== false,
+        border: !!x.border,
+        center: x.center !== false,
+      };
+    }
+
+    function cleanSize(z: any) {
+      if (z && z.t === 'cols') return { t: 'cols', n: Math.floor(nv(z.n, 1, 6, 2)) };
+      if (z && z.t === 'box') return { t: 'box', w: nv(z.w, 0.5, 100, 4), h: nv(z.h, 0.5, 100, 4), force: !!z.force };
+      return { t: 'none' };
+    }
+
+    const cleanPreset = (q: any) =>
+      q && typeof q.name === 'string' && q.name.trim()
+        ? { name: q.name.trim().slice(0, 60), s: cleanSettings(q.s), size: cleanSize(q.size) }
+        : null;
 
     let userPresets: any[] = [];
     try {
@@ -1077,22 +1293,20 @@ const isId = lang === 'id';
     };
 
     function syncUI() {
-      ($('#fl-paper') as HTMLSelectElement).value = st.paper;
-      ($('#fl-orient') as HTMLSelectElement).value = st.land ? 'l' : 'p';
-      ($('#fl-pwid') as HTMLInputElement).value = String(st.custom.w);
-      ($('#fl-phei') as HTMLInputElement).value = String(st.custom.h);
-      const customDim = $('#fl-custom-dim');
-      if (customDim) {
-        if (st.paper === 'Custom') customDim.classList.replace('hidden', 'grid');
-        else customDim.classList.replace('grid', 'hidden');
-      }
-      ($('#fl-margin') as HTMLInputElement).value = String(st.m);
-      ($('#fl-gap') as HTMLInputElement).value = String(st.g);
-      ($('#fl-fit') as HTMLSelectElement).value = st.fit;
-      ($('#fl-cap') as HTMLInputElement).checked = st.cap;
-      ($('#fl-num') as HTMLInputElement).checked = st.num;
-      ($('#fl-border') as HTMLInputElement).checked = st.border;
-      ($('#fl-center') as HTMLInputElement).checked = st.center;
+      ($('#paper') as HTMLSelectElement).value = st.paper;
+      ($('#orient') as HTMLSelectElement).value = st.land ? 'l' : 'p';
+      ($('#pwid') as HTMLInputElement).value = String(st.custom.w);
+      ($('#phei') as HTMLInputElement).value = String(st.custom.h);
+      const cwl = $('#cwl');
+      const chl = $('#chl');
+      if (cwl && chl) cwl.hidden = chl.hidden = st.paper !== 'Custom';
+      ($('#margin') as HTMLInputElement).value = String(st.m);
+      ($('#gap') as HTMLInputElement).value = String(st.g);
+      ($('#fit') as HTMLSelectElement).value = st.fit;
+      ($('#cap') as HTMLInputElement).checked = st.cap;
+      ($('#num') as HTMLInputElement).checked = st.num;
+      ($('#border') as HTMLInputElement).checked = st.border;
+      ($('#center') as HTMLInputElement).checked = st.center;
     }
 
     function applyPreset(q: any) {
@@ -1101,33 +1315,72 @@ const isId = lang === 'id';
       if (q.size.t === 'cols') setCols(q.size.n);
       else if (q.size.t === 'box') {
         setBox(q.size.w, q.size.h, q.size.force);
-        ($('#fl-aw') as HTMLInputElement).value = String(q.size.w);
-        ($('#fl-ah') as HTMLInputElement).value = String(q.size.h);
-        ($('#fl-aforce') as HTMLInputElement).checked = q.size.force;
+        ($('#aw') as HTMLInputElement).value = q.size.w;
+        ($('#ah') as HTMLInputElement).value = q.size.h;
+        ($('#aforce') as HTMLInputElement).checked = q.size.force;
       }
       schedule();
     }
 
-    function renderPresets() {
-      const plist = $('#fl-plist');
-      if (!plist) return;
-      if (!userPresets.length) {
-        plist.innerHTML = '<p class="text-muted text-[11px]">Belum ada preset tersimpan.</p>';
-        return;
-      }
-      plist.innerHTML = userPresets
-        .map((q, i) => {
-          const dim = q.s.paper === 'Custom' ? `${fmtN(q.s.custom.w)}×${fmtN(q.s.custom.h)} mm` : q.s.paper;
-          const sz = q.size.t === 'cols' ? `${q.size.n} kolom` : q.size.t === 'box' ? `${fmtN(q.size.w)}×${fmtN(q.size.h)} cm` : 'ukuran tetap';
-          return `<div class="flex items-center justify-between gap-2 rounded-sm border border-line bg-paper px-2 py-1"><button type="button" data-a="apply" data-i="${i}" class="flex-1 text-left"><span class="font-medium text-ink">${esc(q.name)}</span> <small class="text-muted">(${dim}, ${sz})</small></button><div class="flex gap-1"><button type="button" data-a="export" data-i="${i}" class="text-[11px] text-muted hover:text-ink">Ekspor</button><button type="button" data-a="del" data-i="${i}" class="text-[11px] text-red-500 hover:text-red-600">Hapus</button></div></div>`;
-        })
-        .join('');
+    function presetRow(q: any, i: number) {
+      const dim = q.s.paper === 'Custom' ? `${fmtN(q.s.custom.w)}×${fmtN(q.s.custom.h)} mm` : q.s.paper;
+      const sz =
+        q.size.t === 'cols'
+          ? `${q.size.n} kolom`
+          : q.size.t === 'box'
+            ? `${fmtN(q.size.w)}×${fmtN(q.size.h)} cm`
+            : 'ukuran foto tetap';
+      return (
+        `<div class="prow"><button type="button" class="pn" data-a="apply" data-i="${i}"><span>${esc(q.name)}</span><small>${dim} ${q.s.land ? 'lanskap' : 'potret'}, ${sz}</small></button>` +
+        `<button type="button" class="ic" data-a="export" data-i="${i}">Ekspor</button><button type="button" class="ic" data-a="del" data-i="${i}">Hapus</button></div>`
+      );
     }
 
-    $('#fl-plist')?.addEventListener('click', (e) => {
-      const b = (e.target as HTMLElement).closest('button');
+    function renderPresets() {
+      const plist = $('#plist');
+      if (plist) {
+        plist.innerHTML = userPresets.length
+          ? userPresets.map(presetRow).join('')
+          : `<p class="fl-hint">Belum ada preset. Atur pengaturan lalu simpan di bawah, atau impor dari file.</p>`;
+      }
+    }
+
+    async function saveBlob(name: string, blob: Blob) {
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return 'anchor';
+    }
+
+    function showText(t: string) {
+      const ptext = $('#ptext') as HTMLTextAreaElement;
+      if (ptext) ptext.value = t;
+      const pbox = $('#pbox');
+      if (pbox) pbox.hidden = false;
+    }
+
+    async function exportPresets(list: any[], filename: string) {
+      const text = JSON.stringify({ format: 'foto-laporan-preset', version: 1, presets: list }, null, 2);
+      try {
+        await saveBlob(filename, new Blob([text], { type: 'application/json' }));
+        say('File preset diunduh. Kalau tidak muncul, salin teks di bawah dan simpan sendiri.');
+        showText(text);
+      } catch (err: any) {
+        if (err && err.code === 'declined') return;
+        say('File tidak bisa diunduh di tampilan ini. Salin teks di bawah dan simpan sendiri.');
+        showText(text);
+      }
+    }
+
+    let lastDel: any = null;
+    $('#plist')?.addEventListener('click', (e: any) => {
+      const b = e.target.closest('button');
       if (!b) return;
-      const i = +b.dataset.i!, a = b.dataset.a!, q = userPresets[i];
+      const i = +b.dataset.i, a = b.dataset.a, q = userPresets[i];
       if (!q) return;
       if (a === 'apply') {
         applyPreset(q);
@@ -1136,104 +1389,155 @@ const isId = lang === 'id';
         exportPresets([q], `preset-${slug(q.name)}.json`);
       } else if (a === 'del') {
         userPresets.splice(i, 1);
+        lastDel = { q, i };
         persist();
         renderPresets();
-        say(`Preset “${q.name}” dihapus.`);
+        const pmsg = $('#pmsg');
+        if (pmsg) pmsg.innerHTML = `Preset “${esc(q.name)}” dihapus. <button type="button" class="ic" data-a="undo">Urungkan</button>`;
       }
     });
 
-    $('#fl-psave').onclick = () => {
-      const name = ($('#fl-pname') as HTMLInputElement).value.trim();
-      if (!name) {
-        say('Isi nama preset dulu.');
-        return;
-      }
-      const z = ($('#fl-psize') as HTMLSelectElement).value;
-      const aw = $('#fl-aw') as HTMLInputElement;
-      const ah = $('#fl-ah') as HTMLInputElement;
-      const aforce = $('#fl-aforce') as HTMLInputElement;
-      const size = z[0] === 'c' ? { t: 'cols', n: +z.slice(1) } : z === 'box' ? { t: 'box', w: +aw.value || 4, h: +ah.value || 4, force: aforce.checked } : { t: 'none' };
-      const q = { name, s: { ...st, custom: { ...st.custom } }, size };
-      const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
-      if (k >= 0) userPresets[k] = q;
-      else userPresets.push(q);
+    $('#pmsg')?.addEventListener('click', (e: any) => {
+      if (!e.target.closest('[data-a="undo"]') || !lastDel) return;
+      userPresets.splice(Math.min(lastDel.i, userPresets.length), 0, lastDel.q);
+      lastDel = null;
       persist();
-      ($('#fl-pname') as HTMLInputElement).value = '';
       renderPresets();
-      say(`Preset “${q.name}” disimpan.`);
-    };
+      say('Preset dikembalikan.');
+    });
 
-    function exportPresets(list: any[], filename: string) {
-      const text = JSON.stringify({ format: 'foto-laporan-preset', version: 1, presets: list }, null, 2);
-      const blob = new Blob([text], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      say('File preset diunduh.');
+    const psave = $('#psave');
+    if (psave) {
+      psave.onclick = () => {
+        const pname = $('#pname') as HTMLInputElement;
+        const name = pname?.value.trim();
+        if (!name) {
+          say('Isi nama preset dulu.');
+          return;
+        }
+        const psize = $('#psize') as HTMLSelectElement;
+        const z = psize.value;
+        const aw = $('#aw') as HTMLInputElement;
+        const ah = $('#ah') as HTMLInputElement;
+        const aforce = $('#aforce') as HTMLInputElement;
+        const size =
+          z[0] === 'c'
+            ? { t: 'cols', n: +z.slice(1) }
+            : z === 'box'
+              ? { t: 'box', w: +aw.value || 4, h: +ah.value || 4, force: aforce.checked }
+              : { t: 'none' };
+        const q = cleanPreset({ name, s: st, size });
+        if (!q) return;
+        const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
+        if (k >= 0) userPresets[k] = q;
+        else if (userPresets.length < 100) userPresets.push(q);
+        else {
+          say('Jumlah preset sudah penuh (100).');
+          return;
+        }
+        persist();
+        pname.value = '';
+        renderPresets();
+        say(k >= 0 ? `Preset “${q.name}” diperbarui.` : `Preset “${q.name}” disimpan.`);
+      };
     }
 
-    $('#fl-pexp').onclick = () => {
-      if (!userPresets.length) {
-        say('Belum ada preset untuk diekspor.');
-        return;
-      }
-      exportPresets(userPresets, 'preset-foto-laporan.json');
-    };
+    const pexp = $('#pexp');
+    if (pexp) {
+      pexp.onclick = () => {
+        if (!userPresets.length) {
+          say('Belum ada preset sendiri untuk diekspor.');
+          return;
+        }
+        exportPresets(userPresets, 'preset-foto-laporan.json');
+      };
+    }
 
-    $('#fl-pimp').onclick = () => ($('#fl-pfile') as HTMLInputElement).click();
-    $('#fl-pfile')?.addEventListener('change', async (e) => {
-      const f = (e.target as HTMLInputElement).files?.[0];
-      if (!f) return;
-      importText(await f.text());
-      (e.target as HTMLInputElement).value = '';
-    });
+    const pimp = $('#pimp');
+    if (pimp) pimp.onclick = () => ($('#pfile') as HTMLInputElement)?.click();
 
     function importText(text: string) {
       try {
         const j = JSON.parse(text);
         const arr = Array.isArray(j) ? j : Array.isArray(j.presets) ? j.presets : [j];
-        if (!arr.length) throw 0;
-        for (const q of arr) {
-          if (!q.name) continue;
+        const ok = arr.map(cleanPreset).filter(Boolean).slice(0, 50);
+        if (!ok.length) throw 0;
+        for (const q of ok) {
           const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
           if (k >= 0) userPresets[k] = q;
-          else userPresets.push(q);
+          else if (userPresets.length < 100) userPresets.push(q);
         }
         persist();
         renderPresets();
-        say(`${arr.length} preset diimpor.`);
+        say(`${ok.length} preset diimpor.`);
       } catch (_) {
-        say('Teks atau file bukan preset valid.');
+        say('Teks atau file bukan preset yang valid.');
       }
     }
 
-    $('#fl-ptoggle').onclick = () => {
-      const pbox = $('#fl-pbox');
-      pbox.classList.toggle('hidden');
-    };
-    $('#fl-pclose').onclick = () => {
-      $('#fl-pbox').classList.add('hidden');
-    };
-    $('#fl-ptextimp').onclick = () => {
-      const v = ($('#fl-ptext') as HTMLTextAreaElement).value.trim();
-      if (!v) return;
-      importText(v);
-    };
-    $('#fl-pcopy').onclick = async () => {
-      const t = $('#fl-ptext') as HTMLTextAreaElement;
-      if (!t.value) return;
-      await navigator.clipboard.writeText(t.value);
-      say('Teks JSON disalin.');
-    };
+    $('#pfile')?.addEventListener('change', async (e: any) => {
+      const f = e.target.files[0];
+      e.target.value = '';
+      if (!f) return;
+      if (f.size > 1e6) {
+        say('File terlalu besar untuk preset.');
+        return;
+      }
+      importText(await f.text());
+    });
+
+    const ptoggle = $('#ptoggle');
+    if (ptoggle) {
+      ptoggle.onclick = () => {
+        const box = $('#pbox');
+        if (box) {
+          box.hidden = !box.hidden;
+          if (!box.hidden) ($('#ptext') as HTMLTextAreaElement)?.focus();
+        }
+      };
+    }
+
+    const pclose = $('#pclose');
+    if (pclose) pclose.onclick = () => { const box = $('#pbox'); if (box) box.hidden = true; };
+
+    const ptextimp = $('#ptextimp');
+    if (ptextimp) {
+      ptextimp.onclick = () => {
+        const v = ($('#ptext') as HTMLTextAreaElement)?.value.trim();
+        if (!v) {
+          say('Tempel teks preset dulu.');
+          return;
+        }
+        importText(v);
+      };
+    }
+
+    const pcopy = $('#pcopy');
+    if (pcopy) {
+      pcopy.onclick = async () => {
+        const t = $('#ptext') as HTMLTextAreaElement;
+        if (!t || !t.value) {
+          say('Belum ada teks untuk disalin.');
+          return;
+        }
+        t.select();
+        try {
+          await navigator.clipboard.writeText(t.value);
+          say('Teks disalin.');
+        } catch (_) {
+          try {
+            document.execCommand('copy');
+            say('Teks disalin.');
+          } catch (__) {
+            say('Tekan Ctrl+C untuk menyalin teks yang terpilih.');
+          }
+        }
+      };
+    }
 
     renderPresets();
 
-    /* ---------- Pure Binary PDF Generation ---------- */
+    /* ---------- PDF & Cetak ---------- */
     async function buildPDF(): Promise<Blob> {
       const [pw, ph] = paper(), f = (v: number) => ((v * 72) / 25.4).toFixed(2), imgs: any[] = [];
       for (const p of layout().pages) {
@@ -1274,39 +1578,45 @@ const isId = lang === 'id';
       return new Blob(parts, { type: 'application/pdf' });
     }
 
-    $('#fl-print').onclick = () => {
-      if (!st.items.length) {
-        say('Tambahkan foto dulu sebelum mencetak.');
-        return;
-      }
-      window.print();
-    };
+    const printBtn = $('#print');
+    if (printBtn) {
+      printBtn.onclick = () => {
+        if (!st.items.length) {
+          const msg = $('#msg');
+          if (msg) msg.textContent = 'Tambahkan foto dulu.';
+          return;
+        }
+        const msg = $('#msg');
+        if (msg) msg.textContent = '';
+        try {
+          window.print();
+        } catch (_) {
+          if (msg) msg.textContent = 'Cetak tidak tersedia di tampilan ini. Gunakan Unduh PDF.';
+        }
+      };
+    }
 
-    $('#fl-pdf').onclick = async () => {
-      if (!st.items.length) {
-        say('Tambahkan foto dulu.');
-        return;
-      }
-      say('Menyiapkan file PDF…');
-      try {
-        const pdfBlob = await buildPDF();
-        const url = URL.createObjectURL(pdfBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'foto-laporan.pdf';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-        say('PDF berhasil diunduh.');
-      } catch (err) {
-        say('Gagal membuat PDF. Gunakan tombol Cetak untuk opsi PDF browser.');
-      }
-    };
+    const pdfBtn = $('#pdf');
+    if (pdfBtn) {
+      pdfBtn.onclick = async () => {
+        const msg = $('#msg');
+        if (!st.items.length) {
+          if (msg) msg.textContent = 'Tambahkan foto dulu.';
+          return;
+        }
+        if (msg) msg.textContent = 'Menyiapkan PDF…';
+        try {
+          await saveBlob('foto-laporan.pdf', await buildPDF());
+          if (msg) msg.textContent = 'PDF diunduh. Kalau tidak muncul, pakai Cetak lalu Simpan sebagai PDF.';
+        } catch (err: any) {
+          if (msg) msg.textContent = err && err.code === 'declined' ? '' : 'PDF gagal disimpan. Coba tombol Cetak.';
+        }
+      };
+    }
 
     renderPages();
   }
 
-  initFotoLaporan();
-  document.addEventListener('astro:page-load', initFotoLaporan);
+  setupFotoLaporan();
+  document.addEventListener('astro:page-load', setupFotoLaporan);
 </script>
