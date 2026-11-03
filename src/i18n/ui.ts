@@ -14,6 +14,8 @@ export const ui = {
   en: {
     'nav.work': 'Work',
     'nav.blog': 'Blog',
+    'nav.artifacts': 'Artifacts',
+    'nav.tools': 'Tools',
     'nav.about': 'About',
     'nav.contact': 'Contact',
 
@@ -34,7 +36,6 @@ export const ui = {
     'blog.empty': 'No posts yet. Check back soon.',
     'blog.back': '← Back to blog',
 
-    'nav.artifacts': 'Artifacts',
     'artifacts.title': 'Artifacts - Muh. Dimas Januardi Nur',
     'artifacts.description':
       'Downloadable resources: ISO images, documents, cheatsheets, and tools worth keeping around.',
@@ -52,6 +53,26 @@ export const ui = {
     'artifact.type.cheatsheet': 'Cheatsheet',
     'artifact.type.tool': 'Tool',
     'artifact.type.other': 'Other',
+
+    'tools.title': 'Tools - Muh. Dimas Januardi Nur',
+    'tools.description':
+      'Lightweight in-browser utilities, productivity tools, and daily document helpers.',
+    'tools.heading': 'Tools & Utilities',
+    'tools.searchPlaceholder': 'Search tools by name, tag, or function...',
+    'tools.allCategories': 'All Tools',
+    'tools.category.photo': 'Photo & Media',
+    'tools.category.document': 'Documents',
+    'tools.category.utility': 'Utilities',
+    'tools.status.ready': 'Ready to use',
+    'tools.status.comingSoon': 'In Development',
+    'tools.emptyHeading': 'No tools found',
+    'tools.emptyDescription': 'Try adjusting your search query or switching categories.',
+    'tools.back': '← Back to all tools',
+    'tools.privacyBadge': '100% Client-Side · Private',
+    'tools.comingSoonHeading': 'Tool in Active Development',
+    'tools.comingSoonNotice':
+      'This tool is currently scheduled for implementation. It will process all data client-side with zero server uploads.',
+    'tools.openTool': 'Open Tool',
 
     'share.label': 'Share this page',
     'share.title': 'Share',
@@ -87,6 +108,8 @@ export const ui = {
   id: {
     'nav.work': 'Karya',
     'nav.blog': 'Blog',
+    'nav.artifacts': 'Artefak',
+    'nav.tools': 'Tools',
     'nav.about': 'Tentang',
     'nav.contact': 'Kontak',
 
@@ -107,7 +130,6 @@ export const ui = {
     'blog.empty': 'Belum ada tulisan. Nantikan yang berikutnya.',
     'blog.back': '← Kembali ke blog',
 
-    'nav.artifacts': 'Artefak',
     'artifacts.title': 'Artefak - Muh. Dimas Januardi Nur',
     'artifacts.description':
       'Resource yang bisa diunduh: image ISO, dokumen, cheatsheet, dan tools yang layak disimpan.',
@@ -125,6 +147,26 @@ export const ui = {
     'artifact.type.cheatsheet': 'Cheatsheet',
     'artifact.type.tool': 'Tool',
     'artifact.type.other': 'Lainnya',
+
+    'tools.title': 'Perkakas & Tools - Muh. Dimas Januardi Nur',
+    'tools.description':
+      'Koleksi perkakas ringan peramban, pengolah dokumen, dan utilitas kerja harian.',
+    'tools.heading': 'Tools & Utilitas',
+    'tools.searchPlaceholder': 'Cari tool berdasarkan nama, fungsi, atau tag...',
+    'tools.allCategories': 'Semua Tool',
+    'tools.category.photo': 'Foto & Media',
+    'tools.category.document': 'Dokumen',
+    'tools.category.utility': 'Utilitas',
+    'tools.status.ready': 'Siap Pakai',
+    'tools.status.comingSoon': 'Dalam Pengembangan',
+    'tools.emptyHeading': 'Tool tidak ditemukan',
+    'tools.emptyDescription': 'Coba ubah kata kunci pencarian atau pilih kategori lain.',
+    'tools.back': '← Kembali ke daftar tools',
+    'tools.privacyBadge': '100% Di Peramban · Privat',
+    'tools.comingSoonHeading': 'Tool Sedang Disiapkan',
+    'tools.comingSoonNotice':
+      'Tool ini sedang dalam tahap perancangan alur. Semua proses berjalan langsung di peramban tanpa pengunggahan file.',
+    'tools.openTool': 'Buka Tool',
 
     'share.label': 'Bagikan halaman ini',
     'share.title': 'Bagikan',

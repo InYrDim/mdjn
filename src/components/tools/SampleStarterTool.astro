@@ -1,0 +1,184 @@
+---
+import ToolIcon from './ToolIcon.astro';
+import { type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const isId = lang === 'id';
+---
+
+<div class="space-y-8">
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+    <!-- Configuration Form -->
+    <div class="space-y-4">
+      <div>
+        <label for="sample-title" class="block font-mono text-xs text-muted">
+          {isId ? 'Judul Catatan / Kartu' : 'Card / Note Title'}
+        </label>
+        <input
+          type="text"
+          id="sample-title"
+          value={isId ? 'Rangkuman Diskusi Arsitektur' : 'Architecture Review Summary'}
+          class="mt-1.5 w-full rounded-sm border border-line bg-transparent px-3 py-2 text-sm text-ink transition-colors focus:border-accent focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="sample-desc" class="block font-mono text-xs text-muted">
+          {isId ? 'Isi Ringkasan' : 'Content Body'}
+        </label>
+        <textarea
+          id="sample-desc"
+          rows="4"
+          class="mt-1.5 w-full resize-none rounded-sm border border-line bg-transparent px-3 py-2 text-sm text-ink transition-colors focus:border-accent focus:outline-none"
+        >{isId ? 'Wadah tools telah diselaraskan dengan estetika Quiet Technical situs. Seluruh proses pengolahan data berjalan 100% lokal di browser.' : 'Tools workspace container aligned with the site Quiet Technical aesthetic. All data processing runs 100% client-side in the browser.'}</textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="sample-tag" class="block font-mono text-xs text-muted">
+            {isId ? 'Label / Tag' : 'Badge Tag'}
+          </label>
+          <input
+            type="text"
+            id="sample-tag"
+            value="ARCHITECTURE"
+            class="mt-1.5 w-full rounded-sm border border-line bg-transparent px-3 py-2 font-mono text-xs text-ink uppercase transition-colors focus:border-accent focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="sample-author" class="block font-mono text-xs text-muted">
+            {isId ? 'Nama Pembuat' : 'Author'}
+          </label>
+          <input
+            type="text"
+            id="sample-author"
+            value="Dimas Nur"
+            class="mt-1.5 w-full rounded-sm border border-line bg-transparent px-3 py-2 text-sm text-ink transition-colors focus:border-accent focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button
+          type="button"
+          id="btn-copy-card"
+          class="inline-flex items-center gap-1.5 rounded-sm bg-ink px-3.5 py-1.5 text-xs font-medium text-paper transition-opacity hover:opacity-90"
+        >
+          <ToolIcon name="copy" size={13} />
+          <span id="btn-copy-text">{isId ? 'Salin Ringkasan' : 'Copy Summary'}</span>
+        </button>
+
+        <button
+          type="button"
+          id="btn-reset-card"
+          class="text-xs text-muted transition-colors hover:text-ink"
+        >
+          {isId ? 'Reset Nilai' : 'Reset Default'}
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="flex flex-col justify-start">
+      <div class="mb-2 font-mono text-xs text-muted">
+        {isId ? 'Preview Langsung' : 'Live Preview'}
+      </div>
+
+      <div
+        id="preview-card-box"
+        class="rounded-sm border border-line bg-paper p-6 transition-all"
+      >
+        <div class="flex items-baseline justify-between gap-2 border-b border-line pb-3">
+          <span
+            id="preview-tag"
+            class="rounded-sm bg-ink/[0.06] px-2 py-0.5 font-mono text-[11px] font-medium text-ink"
+          >
+            ARCHITECTURE
+          </span>
+          <time id="preview-date" class="font-mono text-xs text-muted">
+            {new Date().toISOString().split('T')[0]}
+          </time>
+        </div>
+
+        <h3 id="preview-title" class="mt-4 font-display text-lg font-medium text-ink">
+          {isId ? 'Rangkuman Diskusi Arsitektur' : 'Architecture Review Summary'}
+        </h3>
+
+        <p id="preview-desc" class="mt-2 text-sm text-ink/70 leading-relaxed">
+          {isId ? 'Wadah tools telah diselaraskan dengan estetika Quiet Technical situs. Seluruh proses pengolahan data berjalan 100% lokal di browser.' : 'Tools workspace container aligned with the site Quiet Technical aesthetic. All data processing runs 100% client-side in the browser.'}
+        </p>
+
+        <div class="mt-6 flex items-center justify-between border-t border-line/60 pt-3 text-xs text-muted">
+          <span id="preview-author" class="font-mono">Dimas Nur</span>
+          <span class="font-mono text-[11px] text-accent">Quiet Technical</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupSampleTool() {
+    const titleInput = document.getElementById('sample-title') as HTMLInputElement | null;
+    const descInput = document.getElementById('sample-desc') as HTMLTextAreaElement | null;
+    const tagInput = document.getElementById('sample-tag') as HTMLInputElement | null;
+    const authorInput = document.getElementById('sample-author') as HTMLInputElement | null;
+
+    const previewTitle = document.getElementById('preview-title');
+    const previewDesc = document.getElementById('preview-desc');
+    const previewTag = document.getElementById('preview-tag');
+    const previewAuthor = document.getElementById('preview-author');
+
+    const copyBtn = document.getElementById('btn-copy-card');
+    const copyText = document.getElementById('btn-copy-text');
+    const resetBtn = document.getElementById('btn-reset-card');
+
+    if (!titleInput || !previewTitle) return;
+
+    function updatePreview() {
+      if (previewTitle && titleInput) previewTitle.textContent = titleInput.value || 'Untitled';
+      if (previewDesc && descInput) previewDesc.textContent = descInput.value || '';
+      if (previewTag && tagInput) previewTag.textContent = tagInput.value.toUpperCase() || 'NOTE';
+      if (previewAuthor && authorInput) previewAuthor.textContent = authorInput.value || 'Anonymous';
+    }
+
+    titleInput.addEventListener('input', updatePreview);
+    if (descInput) descInput.addEventListener('input', updatePreview);
+    if (tagInput) tagInput.addEventListener('input', updatePreview);
+    if (authorInput) authorInput.addEventListener('input', updatePreview);
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        titleInput.value = 'Architecture Review Summary';
+        if (descInput) descInput.value = 'Tools workspace container aligned with the site Quiet Technical aesthetic. All data processing runs 100% client-side in the browser.';
+        if (tagInput) tagInput.value = 'ARCHITECTURE';
+        if (authorInput) authorInput.value = 'Dimas Nur';
+        updatePreview();
+      });
+    }
+
+    if (copyBtn && copyText) {
+      copyBtn.addEventListener('click', async () => {
+        const textToCopy = `### ${titleInput.value}\n**Tag:** ${tagInput?.value || ''}\n**Author:** ${authorInput?.value || ''}\n\n${descInput?.value || ''}`;
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          const original = copyText.textContent;
+          copyText.textContent = 'Copied!';
+          setTimeout(() => {
+            copyText.textContent = original;
+          }, 2000);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+  }
+
+  setupSampleTool();
+  document.addEventListener('astro:page-load', setupSampleTool);
+</script>
