@@ -53,7 +53,7 @@ const { lang } = Astro.props;
             </div>
             <input type="file" id="pfile" accept=".json,application/json" hidden />
             <div id="pbox" hidden>
-              <textarea id="ptext" rows="6" spellcheck="false" placeholder="Teks preset muncul di sini. Atau tempel teks preset lalu klik Impor teks." aria-label="Teks preset"></textarea>
+              <textarea id="ptext" rows="5" spellcheck="false" placeholder="Teks preset muncul di sini. Atau tempel teks preset lalu klik Impor teks." aria-label="Teks preset"></textarea>
               <div class="fl-acts">
                 <button type="button" id="pcopy">Salin teks</button>
                 <button type="button" id="ptextimp">Impor teks</button>
@@ -151,14 +151,17 @@ const { lang } = Astro.props;
 
   <!-- INTERACTIVE CROP MODAL DIALOG -->
   <dialog id="dlg">
-    <div style="display:flex;justify-content:space-between;align-items:baseline">
-      <b>Edit foto</b>
-      <span class="fl-hint" id="csz"></span>
+    <div class="fl-dlg-head">
+      <div class="fl-dlg-title-row">
+        <b>Edit foto</b>
+        <span class="fl-hint" id="csz"></span>
+      </div>
+      <button type="button" id="dlg-close" class="fl-dlg-x" aria-label="Tutup dialog">✕</button>
     </div>
     <div class="fl-chips" id="chips"></div>
     <div class="fl-stage"><canvas id="cv"></canvas></div>
     <p class="fl-hint" style="margin:8px 0">Geser kotak untuk memindah, tarik tepi atau sudut untuk mengubah ukuran.</p>
-    <div class="fl-sz" style="margin:10px 0 6px">
+    <div class="fl-sz" style="margin:8px 0 6px">
       <input type="number" id="ew" min="0.5" step="0.1" aria-label="Lebar (cm)" /> ×
       <input type="number" id="eh" min="0.5" step="0.1" aria-label="Tinggi (cm)" /> cm
       <label><input type="checkbox" id="elock" /> Kunci rasio</label>
@@ -209,7 +212,7 @@ const { lang } = Astro.props;
   .fl-app {
     display: grid;
     grid-template-columns: 340px minmax(0, 1fr);
-    height: 780px;
+    height: 760px;
     max-height: 85vh;
     overflow: hidden;
     background: var(--fl-bg);
@@ -227,7 +230,7 @@ const { lang } = Astro.props;
   }
 
   .fl-top {
-    padding: 18px 20px 10px;
+    padding: 16px 20px 10px;
   }
   .fl-title {
     font-size: 16px;
@@ -486,36 +489,76 @@ const { lang } = Astro.props;
     overscroll-behavior: contain;
     background: color-mix(in srgb, var(--fl-line) 25%, var(--fl-bg));
   }
-  .fl-pg {
-    width: min(100%, 600px);
-    flex: none;
+
+  /* Global styles for dynamically injected elements inside #preview to avoid Astro scoping bug */
+  :global(#preview .fl-pg) {
+    width: min(100%, 480px) !important;
+    max-width: 480px !important;
+    flex: none !important;
+    margin: 0 auto !important;
   }
-  .fl-pg canvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    background: #ffffff;
-    box-shadow: 0 0 0 1px var(--fl-line), 0 4px 14px rgba(0, 0, 0, 0.08);
+  :global(#preview .fl-pg canvas) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 1px var(--fl-line), 0 4px 14px rgba(0, 0, 0, 0.08) !important;
   }
-  .fl-lab {
-    text-align: center;
-    color: var(--fl-mute);
-    font-size: 12px;
-    font-family: var(--font-mono, monospace);
-    margin-top: 6px;
+  :global(#preview .fl-lab) {
+    text-align: center !important;
+    color: var(--fl-mute) !important;
+    font-size: 12px !important;
+    font-family: var(--font-mono, monospace) !important;
+    margin-top: 6px !important;
   }
 
+  /* Fixed Centered Dialog Styles */
   dialog#dlg {
+    position: fixed !important;
+    inset: 0 !important;
+    margin: auto !important;
+    width: min(92vw, 420px) !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
     border: 1px solid var(--fl-line);
     background: var(--fl-panel);
     color: var(--fl-ink);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 16px;
-    width: min(94vw, 420px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    z-index: 99999;
   }
   dialog#dlg::backdrop {
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
   }
+
+  .fl-dlg-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--fl-line);
+    padding-bottom: 8px;
+  }
+  .fl-dlg-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .fl-dlg-x {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    color: var(--fl-mute);
+    line-height: 1;
+  }
+  .fl-dlg-x:hover {
+    color: var(--fl-ink);
+  }
+
   .fl-chips {
     display: flex;
     flex-wrap: wrap;
@@ -528,17 +571,22 @@ const { lang } = Astro.props;
     border-color: var(--fl-acc);
   }
   .fl-stage {
-    display: grid;
-    place-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: var(--fl-bg);
     border: 1px solid var(--fl-line);
     border-radius: 4px;
-    padding: 8px;
+    padding: 6px;
+    max-height: 250px;
+    overflow: hidden;
   }
   #cv {
     touch-action: none;
     max-width: 100%;
+    max-height: 240px;
     height: auto;
+    width: auto;
   }
   .fl-sz {
     display: flex;
@@ -592,7 +640,7 @@ const { lang } = Astro.props;
       border: none !important;
       box-shadow: none !important;
     }
-    .fl-side, .fl-lab {
+    .fl-side, :global(.fl-lab) {
       display: none !important;
     }
     .fl-app {
@@ -607,16 +655,16 @@ const { lang } = Astro.props;
       overflow: visible !important;
       background: transparent !important;
     }
-    .fl-pg {
+    :global(.fl-pg) {
       width: calc(var(--pw) * 1mm) !important;
       break-after: page !important;
       page-break-after: always !important;
     }
-    .fl-pg:last-child {
+    :global(.fl-pg:last-child) {
       break-after: auto !important;
       page-break-after: auto !important;
     }
-    .fl-pg canvas {
+    :global(.fl-pg canvas) {
       box-shadow: none !important;
     }
   }
@@ -627,7 +675,10 @@ const { lang } = Astro.props;
     const root = document.querySelector('.fl-workspace');
     if (!root) return;
 
-    // Scoped query selector to this container
+    // Prevent duplicate event bindings
+    if (root.getAttribute('data-bound') === 'true') return;
+    root.setAttribute('data-bound', 'true');
+
     const $ = (s: string) => root.querySelector(s) as HTMLElement;
     const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
     const PAPERS: Record<string, [number, number]> = { A4: [210, 297], Letter: [216, 279], A5: [148, 210] };
@@ -737,7 +788,7 @@ const { lang } = Astro.props;
     /* ---------- Crop ---------- */
     const dlg = $('#dlg') as HTMLDialogElement;
     const cv = $('#cv') as HTMLCanvasElement;
-    const VP = 340, MIN = 24;
+    const VP = 280, MIN = 24;
     const RATIOS: [string, number][] = [
       ['Bebas', 0],
       ['1:1', 1],
@@ -770,26 +821,50 @@ const { lang } = Astro.props;
       const chips = $('#chips');
       if (chips) {
         chips.innerHTML = RATIOS.map(
-          ([n, v]) => `<button type="button" data-v="${v}" class="${cr.ratio === v ? 'on' : ''}">${n}</button>`
+          ([n, v]) => `<button type="button" data-v="${v}" class="${cr && cr.ratio === v ? 'on' : ''}">${n}</button>`
         ).join('');
       }
     }
 
     function cfinish(v: any) {
-      if (!cr) return;
-      const r = cr.res;
-      cr = null;
-      if (dlg.open) dlg.close();
-      r(v);
+      if (dlg && dlg.open) {
+        try { dlg.close(); } catch (_) {}
+      }
+      if (cr) {
+        const r = cr.res;
+        cr = null;
+        if (r) r(v);
+      }
     }
 
-    dlg?.addEventListener('close', () => cfinish(null));
+    // Close handlers
+    dlg?.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      cfinish(null);
+    });
+
+    // Close on backdrop click
+    dlg?.addEventListener('click', (e) => {
+      const rect = dlg.getBoundingClientRect();
+      const inBox = (
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width
+      );
+      if (!inBox) cfinish(null);
+    });
+
+    const dlgX = $('#dlg-close');
+    if (dlgX) dlgX.onclick = () => cfinish(null);
+
     const skipBtn = $('#skip');
     if (skipBtn) skipBtn.onclick = () => cfinish(null);
 
     const resetBtn = $('#reset');
     if (resetBtn) {
       resetBtn.onclick = () => {
+        if (!cr) return;
         cr.r = { x: 0, y: 0, w: cr.W, h: cr.H };
         cr.ratio = 0;
         renderChips();
@@ -805,16 +880,20 @@ const { lang } = Astro.props;
     const eprev = $('#eprev');
     if (eprev) {
       eprev.onclick = () => {
-        cr.pos = Math.max(0, cr.pos - 1);
-        showPos();
+        if (cr) {
+          cr.pos = Math.max(0, cr.pos - 1);
+          showPos();
+        }
       };
     }
 
     const enext = $('#enext');
     if (enext) {
       enext.onclick = () => {
-        cr.pos = Math.min(st.items.length - 1, cr.pos + 1);
-        showPos();
+        if (cr) {
+          cr.pos = Math.min(st.items.length - 1, cr.pos + 1);
+          showPos();
+        }
       };
     }
 
@@ -838,6 +917,7 @@ const { lang } = Astro.props;
     const okBtn = $('#ok');
     if (okBtn) {
       okBtn.onclick = () => {
+        if (!cr) return;
         const { r, W, H } = cr;
         const lock = ($('#elock') as HTMLInputElement).checked;
         const ew = $('#ew') as HTMLInputElement;
@@ -858,7 +938,7 @@ const { lang } = Astro.props;
 
     $('#chips')?.addEventListener('click', (e: any) => {
       const b = e.target.closest('button');
-      if (!b) return;
+      if (!b || !cr) return;
       const v = +b.dataset.v, r = cr.r;
       cr.ratio = v;
       if (v) {
@@ -873,6 +953,7 @@ const { lang } = Astro.props;
     });
 
     function cdraw() {
+      if (!cr) return;
       const { W, H, r, im } = cr;
       cv.width = W;
       cv.height = H;
@@ -908,6 +989,7 @@ const { lang } = Astro.props;
     };
 
     cv?.addEventListener('pointerdown', (e: any) => {
+      if (!cr) return;
       const [px, py] = cpos(e), r = cr.r, T = 14;
       const near = (a: number, b: number) => Math.abs(a - b) < T;
       const inX = px >= r.x - T && px <= r.x + r.w + T, inY = py >= r.y - T && py <= r.y + r.h + T;
@@ -924,7 +1006,7 @@ const { lang } = Astro.props;
     });
 
     cv?.addEventListener('pointermove', (e: any) => {
-      if (!drag) return;
+      if (!drag || !cr) return;
       const [px, py] = cpos(e), dx = px - drag.px, dy = py - drag.py;
       const { W, H } = cr, o = drag.r0, f = drag.f;
       if (drag.move) {
@@ -1104,18 +1186,25 @@ const { lang } = Astro.props;
     function renderPages() {
       const L = layout();
       const box = $('#preview');
+      if (!box) return;
       const arr = L.pages.length ? L.pages : [[]];
       const top = box.scrollTop;
       lastL = L;
       const pgStyle = document.getElementById('pg');
       if (pgStyle) pgStyle.textContent = `@page{size:${L.pw}mm ${L.ph}mm;margin:0}`;
       box.style.setProperty('--pw', String(L.pw));
+
+      // Inject HTML with inline styles to ensure canvas never overflows before or after Astro compilation
       box.innerHTML = arr
         .map(
           (_, i) =>
-            `<div class="fl-pg"><canvas></canvas><div class="fl-lab">Halaman ${i + 1} dari ${arr.length}</div></div>`
+            `<div class="fl-pg" style="width:min(100%,480px);max-width:480px;flex:none;margin:0 auto">` +
+            `<canvas style="display:block;width:100%;max-width:100%;height:auto;background:#fff"></canvas>` +
+            `<div class="fl-lab" style="text-align:center;font-size:12px;margin-top:6px">Halaman ${i + 1} dari ${arr.length}</div>` +
+            `</div>`
         )
         .join('');
+
       box.querySelectorAll('canvas').forEach((cvEl, i) => {
         paintPage(cvEl, arr[i], L.pw, L.ph, 150);
         if (L.pages.length) {
