@@ -1,5 +1,6 @@
 ---
 import ToolLayout from '../../layouts/ToolLayout.astro';
+import FotoLaporanTool from '../../components/tools/FotoLaporanTool.astro';
 import { tools, type ToolItem } from '../../data/tools';
 
 export async function getStaticPaths() {
@@ -16,4 +17,6 @@ export interface Props {
 const { tool } = Astro.props;
 ---
 
-<ToolLayout tool={tool} lang="en" />
+<ToolLayout tool={tool} lang="en">
+  {tool.id === 'foto-laporan' && <FotoLaporanTool lang="en" />}
+</ToolLayout>

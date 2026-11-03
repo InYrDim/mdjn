@@ -21,21 +21,21 @@ export const tools: ToolItem[] = [
   {
     id: 'foto-laporan',
     title: {
-      en: 'Field Report Photo Stamping',
-      id: 'Stempel Foto Laporan Lapangan',
+      en: 'Field Report Photo Layout',
+      id: 'Tata Letak Foto Laporan',
     },
     description: {
-      en: 'Format and stamp site inspection photos with timestamp, GPS, and project metadata in a standardized grid.',
-      id: 'Format dan beri cap foto inspeksi lapangan dengan tanggal, GPS, dan metadata proyek dalam kisi standar.',
+      en: 'Format and organize site inspection photos into printable pages (A4/Letter), with interactive crop, auto-captions, and instant client-side PDF export.',
+      id: 'Tata dan susun foto dokumentasi lapangan ke format kertas cetak (A4/Letter), crop interaktif, caption otomatis, dan unduh PDF tanpa server.',
     },
     category: 'photo',
     icon: 'camera',
-    status: 'coming_soon',
+    status: 'ready',
     badge: {
-      en: 'Planned',
-      id: 'Direncanakan',
+      en: 'New',
+      id: 'Baru',
     },
-    tags: ['photo', 'inspection', 'grid'],
+    tags: ['photo', 'inspection', 'grid', 'pdf'],
   },
   {
     id: 'pas-foto',

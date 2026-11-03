@@ -1,0 +1,1312 @@
+---
+import ToolIcon from './ToolIcon.astro';
+import { type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const isId = lang === 'id';
+---
+
+<div class="foto-laporan-root">
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+    <!-- LEFT PANEL: Controls -->
+    <div class="space-y-5 lg:col-span-5">
+      <!-- Upload Dropzone -->
+      <div>
+        <label
+          id="fl-drop"
+          class="group flex cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-line bg-paper px-4 py-6 text-center transition-colors hover:border-accent hover:bg-ink/[0.02]"
+        >
+          <input type="file" id="fl-file" accept="image/*" multiple class="hidden" />
+          <div class="text-muted transition-colors group-hover:text-accent">
+            <ToolIcon name="camera" size={28} />
+          </div>
+          <span class="mt-2 text-sm font-medium text-ink">
+            {isId ? 'Pilih Foto' : 'Select Photos'}
+          </span>
+          <span class="mt-0.5 text-xs text-muted">
+            {isId ? 'atau tarik & lepas file ke sini' : 'or drag & drop files here'}
+          </span>
+        </label>
+        <p id="fl-msg" class="mt-2 font-mono text-xs text-muted min-h-[1.4em]"></p>
+      </div>
+
+      <!-- Accordion Section 1: Preset -->
+      <details class="group border-t border-line pt-3" open>
+        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
+          <span>{isId ? 'Preset Pengaturan' : 'Layout Presets'}</span>
+          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="mt-3 space-y-3 pb-2 text-xs">
+          <!-- Preset list -->
+          <div id="fl-plist" class="space-y-1.5"></div>
+
+          <!-- Save current settings as preset -->
+          <div class="space-y-2 border-t border-line/60 pt-3">
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="fl-pname"
+                maxlength="60"
+                placeholder={isId ? 'Nama preset baru...' : 'New preset name...'}
+                class="flex-1 rounded-sm border border-line bg-transparent px-2.5 py-1.5 text-xs text-ink placeholder:text-muted/60 transition-colors focus:border-accent focus:outline-none"
+              />
+              <select
+                id="fl-psize"
+                class="rounded-sm border border-line bg-paper px-2 py-1.5 text-xs text-ink transition-colors focus:border-accent focus:outline-none"
+              >
+                <option value="none">{isId ? 'Ukuran tetap' : 'Fixed size'}</option>
+                <option value="c1">{isId ? 'Bagi 1 kolom' : '1 Column'}</option>
+                <option value="c2">{isId ? 'Bagi 2 kolom' : '2 Columns'}</option>
+                <option value="c3">{isId ? 'Bagi 3 kolom' : '3 Columns'}</option>
+                <option value="c4">{isId ? 'Bagi 4 kolom' : '4 Columns'}</option>
+                <option value="box">{isId ? 'Ukuran seragam' : 'Uniform box'}</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              id="fl-psave"
+              class="w-full rounded-sm border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-accent hover:text-accent"
+            >
+              {isId ? 'Simpan Pengaturan Saat Ini' : 'Save Current Settings'}
+            </button>
+          </div>
+
+          <!-- Preset Import / Export Actions -->
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button type="button" id="fl-pimp" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
+              {isId ? 'Impor File' : 'Import File'}
+            </button>
+            <button type="button" id="fl-pexp" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
+              {isId ? 'Ekspor Semua' : 'Export All'}
+            </button>
+            <button type="button" id="fl-ptoggle" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink">
+              {isId ? 'Teks JSON' : 'JSON Text'}
+            </button>
+          </div>
+          <input type="file" id="fl-pfile" accept=".json,application/json" class="hidden" />
+
+          <!-- JSON text paste drawer -->
+          <div id="fl-pbox" class="hidden space-y-2 rounded-sm border border-line bg-ink/[0.02] p-2.5">
+            <textarea
+              id="fl-ptext"
+              rows="4"
+              spellcheck="false"
+              placeholder={isId ? 'Teks preset JSON...' : 'JSON preset text...'}
+              class="w-full resize-none font-mono text-[11px] rounded-sm border border-line bg-paper p-2 text-ink focus:border-accent focus:outline-none"
+            ></textarea>
+            <div class="flex gap-2">
+              <button type="button" id="fl-pcopy" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
+                {isId ? 'Salin' : 'Copy'}
+              </button>
+              <button type="button" id="fl-ptextimp" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
+                {isId ? 'Impor Teks' : 'Import Text'}
+              </button>
+              <button type="button" id="fl-pclose" class="rounded-sm border border-line px-2 py-1 text-[11px] text-muted hover:text-ink">
+                {isId ? 'Tutup' : 'Close'}
+              </button>
+            </div>
+          </div>
+          <p id="fl-pmsg" class="font-mono text-[11px] text-muted min-h-[1.2em]"></p>
+        </div>
+      </details>
+
+      <!-- Accordion Section 2: Susunan & Tata Letak -->
+      <details class="group border-t border-line pt-3" open>
+        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
+          <span>{isId ? 'Susunan Kolom & Tampilan' : 'Layout & Display'}</span>
+          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="mt-3 space-y-3 pb-2 text-xs">
+          <!-- Column presets -->
+          <div>
+            <span class="block text-muted mb-1.5">{isId ? 'Bagi lebar foto menurut kolom:' : 'Fit into columns:'}</span>
+            <div id="fl-presets" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
+          <!-- Fit mode select -->
+          <div>
+            <label for="fl-fit" class="block text-muted mb-1">{isId ? 'Rasio kotak beda dari foto:' : 'When ratio differs:'}</label>
+            <select
+              id="fl-fit"
+              class="w-full rounded-sm border border-line bg-paper px-2.5 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
+            >
+              <option value="contain">{isId ? 'Muat utuh (tanpa terpotong)' : 'Contain (no crop)'}</option>
+              <option value="cover">{isId ? 'Penuhi slot (dipotong tengah)' : 'Cover (fill slot)'}</option>
+            </select>
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="space-y-2 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-ink">
+              <input type="checkbox" id="fl-center" checked class="rounded-xs accent-accent" />
+              <span>{isId ? 'Rata tengah tiap baris' : 'Center photos in each row'}</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-ink">
+              <input type="checkbox" id="fl-cap" checked class="rounded-xs accent-accent" />
+              <span>{isId ? 'Tampilkan teks keterangan' : 'Show captions'}</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-ink">
+              <input type="checkbox" id="fl-num" checked class="rounded-xs accent-accent" />
+              <span>{isId ? 'Nomor otomatis (Gambar n.)' : 'Auto number (Figure n.)'}</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-ink">
+              <input type="checkbox" id="fl-border" class="rounded-xs accent-accent" />
+              <span>{isId ? 'Bingkai tipis di sekeliling foto' : 'Thin border around photos'}</span>
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <!-- Accordion Section 3: Ukuran Semua Foto -->
+      <details class="group border-t border-line pt-3">
+        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
+          <span>{isId ? 'Ukuran Semua Foto' : 'Batch Photo Sizing'}</span>
+          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="mt-3 space-y-3 pb-2 text-xs">
+          <!-- Step scale buttons -->
+          <div class="flex items-center gap-2">
+            <label for="fl-step" class="text-muted">{isId ? 'Langkah (cm):' : 'Step (cm):'}</label>
+            <input type="number" id="fl-step" min="0.1" step="0.1" value="1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+            <div class="flex gap-1 ml-auto">
+              <button type="button" id="fl-allDec" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink font-mono">−</button>
+              <button type="button" id="fl-allInc" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-ink hover:text-ink font-mono">+</button>
+            </div>
+          </div>
+
+          <!-- Direct size inputs -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="fl-aw" class="block text-muted mb-1">{isId ? 'Lebar (cm)' : 'Width (cm)'}</label>
+              <input type="number" id="fl-aw" min="0.5" step="0.1" value="4" class="w-full rounded-sm border border-line bg-transparent px-2.5 py-1 text-xs text-ink" />
+            </div>
+            <div>
+              <label for="fl-ah" class="block text-muted mb-1">{isId ? 'Tinggi (cm)' : 'Height (cm)'}</label>
+              <input type="number" id="fl-ah" min="0.5" step="0.1" value="4" class="w-full rounded-sm border border-line bg-transparent px-2.5 py-1 text-xs text-ink" />
+            </div>
+          </div>
+
+          <label class="flex items-center gap-2 cursor-pointer text-ink">
+            <input type="checkbox" id="fl-aforce" class="rounded-xs accent-accent" />
+            <span>{isId ? 'Paksa persis ukuran ini' : 'Force exact dimensions'}</span>
+          </label>
+
+          <button
+            type="button"
+            id="fl-allSet"
+            class="w-full rounded-sm border border-line px-3 py-1.5 text-xs text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            {isId ? 'Terapkan Ukuran ke Semua Foto' : 'Apply Dimensions to All'}
+          </button>
+        </div>
+      </details>
+
+      <!-- Accordion Section 4: Kertas & Margin -->
+      <details class="group border-t border-line pt-3">
+        <summary class="flex cursor-pointer items-center justify-between py-1 text-sm font-medium text-ink select-none">
+          <span>{isId ? 'Kertas & Margin' : 'Paper & Margins'}</span>
+          <span class="text-xs text-muted group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="mt-3 space-y-3 pb-2 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="fl-paper" class="block text-muted mb-1">{isId ? 'Ukuran Kertas' : 'Paper Size'}</label>
+              <select id="fl-paper" class="w-full rounded-sm border border-line bg-paper px-2 py-1 text-xs text-ink">
+                <option value="A4">A4</option>
+                <option value="Letter">Letter</option>
+                <option value="A5">A5</option>
+                <option value="Custom">{isId ? 'Kustom…' : 'Custom…'}</option>
+              </select>
+            </div>
+            <div>
+              <label for="fl-orient" class="block text-muted mb-1">{isId ? 'Orientasi' : 'Orientation'}</label>
+              <select id="fl-orient" class="w-full rounded-sm border border-line bg-paper px-2 py-1 text-xs text-ink">
+                <option value="p">{isId ? 'Potret' : 'Portrait'}</option>
+                <option value="l">{isId ? 'Lanskap' : 'Landscape'}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Paper Width & Height -->
+          <div id="fl-custom-dim" class="hidden grid-cols-2 gap-2">
+            <div>
+              <label for="fl-pwid" class="block text-muted mb-1">Lebar (mm)</label>
+              <input type="number" id="fl-pwid" min="30" max="2000" value="210" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+            </div>
+            <div>
+              <label for="fl-phei" class="block text-muted mb-1">Tinggi (mm)</label>
+              <input type="number" id="fl-phei" min="30" max="2000" value="297" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="fl-margin" class="block text-muted mb-1">{isId ? 'Margin (mm)' : 'Margin (mm)'}</label>
+              <input type="number" id="fl-margin" min="0" max="50" value="12" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+            </div>
+            <div>
+              <label for="fl-gap" class="block text-muted mb-1">{isId ? 'Jarak Foto (mm)' : 'Photo Gap (mm)'}</label>
+              <input type="number" id="fl-gap" min="0" max="30" value="6" class="w-full rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Action Footer -->
+      <div class="space-y-3 border-t border-line pt-4">
+        <p id="fl-info" class="font-mono text-xs text-muted min-h-[1.2em]"></p>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            id="fl-pdf"
+            class="flex-1 rounded-sm bg-ink px-4 py-2.5 text-xs font-medium text-paper transition-opacity hover:opacity-90 inline-flex items-center justify-center gap-1.5"
+          >
+            <ToolIcon name="files" size={14} />
+            <span>{isId ? 'Unduh PDF' : 'Download PDF'}</span>
+          </button>
+          <button
+            type="button"
+            id="fl-print"
+            class="rounded-sm border border-line px-4 py-2.5 text-xs text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            {isId ? 'Cetak' : 'Print'}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Live Pages Preview -->
+    <div class="lg:col-span-7">
+      <div class="flex items-center justify-between pb-3">
+        <span class="font-mono text-xs uppercase tracking-wider text-muted">
+          {isId ? 'Pratinjau Lembar Cetak' : 'Printable Sheet Preview'}
+        </span>
+        <span class="font-mono text-[11px] text-muted">
+          {isId ? 'Klik foto untuk crop & edit' : 'Click photo to crop & edit'}
+        </span>
+      </div>
+
+      <!-- Preview container -->
+      <div
+        id="fl-preview"
+        class="flex flex-col items-center gap-8 rounded-sm border border-line bg-ink/[0.02] p-6 sm:p-8 overflow-y-auto max-h-[85vh]"
+      ></div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE CROP MODAL DIALOG -->
+  <dialog
+    id="fl-dlg"
+    class="rounded-sm border border-line bg-paper text-ink p-6 shadow-2xl backdrop:bg-black/60 w-full max-w-md"
+  >
+    <div class="flex items-center justify-between pb-2 border-b border-line">
+      <h3 class="font-display text-base font-medium text-ink">
+        {isId ? 'Crop & Edit Foto' : 'Crop & Edit Photo'}
+      </h3>
+      <span id="fl-csz" class="font-mono text-xs text-muted"></span>
+    </div>
+
+    <!-- Aspect ratio chips -->
+    <div id="fl-chips" class="flex flex-wrap gap-1.5 my-3"></div>
+
+    <!-- Canvas Stage -->
+    <div class="flex justify-center rounded-sm bg-ink/[0.04] p-3 border border-line">
+      <canvas id="fl-cv" class="touch-none max-w-full h-auto cursor-crosshair"></canvas>
+    </div>
+    <p class="mt-2 text-[11px] text-muted text-center">
+      {isId ? 'Geser kotak untuk memindah, tarik tepi / sudut untuk mengubah ukuran.' : 'Drag box to move, pull corners / edges to resize.'}
+    </p>
+
+    <!-- Dimension Controls -->
+    <div class="mt-3 flex items-center gap-2 text-xs">
+      <label class="text-muted">{isId ? 'Ukuran:' : 'Size:'}</label>
+      <input type="number" id="fl-ew" min="0.5" step="0.1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+      <span>×</span>
+      <input type="number" id="fl-eh" min="0.5" step="0.1" class="w-16 rounded-sm border border-line bg-transparent px-2 py-1 text-xs text-ink" />
+      <span>cm</span>
+      <label class="flex items-center gap-1.5 ml-auto cursor-pointer text-ink">
+        <input type="checkbox" id="fl-elock" class="rounded-xs accent-accent" />
+        <span>{isId ? 'Kunci rasio' : 'Lock ratio'}</span>
+      </label>
+    </div>
+
+    <!-- Caption Input -->
+    <div class="mt-3 space-y-1.5">
+      <input
+        type="text"
+        id="fl-ecap"
+        placeholder={isId ? 'Keterangan gambar...' : 'Photo caption...'}
+        class="w-full rounded-sm border border-line bg-transparent px-3 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
+      />
+      <label class="flex items-center gap-2 cursor-pointer text-xs text-ink">
+        <input type="checkbox" id="fl-eshow" class="rounded-xs accent-accent" />
+        <span>{isId ? 'Tampilkan keterangan foto ini' : 'Display caption for this photo'}</span>
+      </label>
+    </div>
+
+    <!-- Photo Order Navigation -->
+    <div class="mt-3 flex items-center justify-between border-t border-line/60 pt-3 text-xs">
+      <span class="text-muted">{isId ? 'Urutan:' : 'Order:'}</span>
+      <div class="flex items-center gap-2">
+        <button type="button" id="fl-eprev" class="rounded-sm border border-line px-2 py-0.5 text-xs text-muted hover:text-ink">◀</button>
+        <span id="fl-epos" class="font-mono text-xs text-ink"></span>
+        <button type="button" id="fl-enext" class="rounded-sm border border-line px-2 py-0.5 text-xs text-muted hover:text-ink">▶</button>
+      </div>
+    </div>
+
+    <!-- Dialog Actions -->
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4 text-xs">
+      <button type="button" id="fl-edel" class="rounded-sm border border-red-500/20 px-2.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10">
+        {isId ? 'Hapus' : 'Delete'}
+      </button>
+      <div class="flex gap-2">
+        <button type="button" id="fl-reset" class="rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted hover:text-ink">
+          {isId ? 'Reset' : 'Reset'}
+        </button>
+        <button type="button" id="fl-skip" class="rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted hover:text-ink">
+          {isId ? 'Batal' : 'Cancel'}
+        </button>
+        <button type="button" id="fl-ok" class="rounded-sm bg-ink px-3 py-1.5 text-xs font-medium text-paper hover:opacity-90">
+          {isId ? 'Simpan' : 'Save'}
+        </button>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  @media print {
+    :global(header), :global(nav), :global(footer), :global(.share-btn), :global(.theme-toggle) {
+      display: none !important;
+    }
+    :global(body) {
+      background: #fff !important;
+      color: #000 !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    :global(main) {
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .foto-laporan-root > .grid > div:first-child {
+      display: none !important;
+    }
+    .foto-laporan-root > .grid > div:last-child {
+      display: block !important;
+      width: 100% !important;
+      grid-column: 1 / -1 !important;
+    }
+    #fl-preview {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      display: block !important;
+    }
+    :global(.fl-pg) {
+      width: 100% !important;
+      max-width: none !important;
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+    :global(.fl-pg:last-child) {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
+    :global(.fl-pg canvas) {
+      box-shadow: none !important;
+      border: none !important;
+    }
+    :global(.fl-lab) {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  function initFotoLaporan() {
+    const root = document.querySelector('.foto-laporan-root');
+    if (!root || root.getAttribute('data-fl-initialized') === 'true') return;
+    root.setAttribute('data-fl-initialized', 'true');
+
+    const $ = (s: string) => root.querySelector(s) as HTMLElement;
+    const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+    const PAPERS: Record<string, [number, number]> = { A4: [210, 297], Letter: [216, 279], A5: [148, 210] };
+
+    interface FotoItem {
+      id: number;
+      src: HTMLImageElement;
+      rect: { x: number; y: number; w: number; h: number };
+      bmp: HTMLCanvasElement;
+      thumb: string;
+      cap: string;
+      w: number;
+      h: number;
+      lock: boolean;
+      showCap: boolean;
+    }
+
+    interface State {
+      items: FotoItem[];
+      uid: number;
+      paper: string;
+      land: boolean;
+      custom: { w: number; h: number };
+      m: number;
+      g: number;
+      step: number;
+      center: boolean;
+      fit: 'contain' | 'cover';
+      cap: boolean;
+      num: boolean;
+      border: boolean;
+    }
+
+    const st: State = {
+      items: [],
+      uid: 1,
+      paper: 'A4',
+      land: false,
+      custom: { w: 210, h: 297 },
+      m: 12,
+      g: 6,
+      step: 1,
+      center: true,
+      fit: 'contain',
+      cap: true,
+      num: true,
+      border: false,
+    };
+
+    const paper = (): [number, number] => {
+      let [w, h] = st.paper === 'Custom' ? [st.custom.w, st.custom.h] : PAPERS[st.paper] || [210, 297];
+      return st.land ? [h, w] : [w, h];
+    };
+
+    /* ---------- Image Processing ---------- */
+    function makeBmp(im: HTMLImageElement, f: { x: number; y: number; w: number; h: number }): HTMLCanvasElement {
+      const sx = f.x * im.width, sy = f.y * im.height, sw = f.w * im.width, sh = f.h * im.height;
+      const s = Math.min(1, 2400 / Math.max(sw, sh));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(sw * s));
+      c.height = Math.max(1, Math.round(sh * s));
+      c.getContext('2d')?.drawImage(im, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      return c;
+    }
+
+    function thumb(c: HTMLCanvasElement): string {
+      const s = 112 / Math.max(c.width, c.height);
+      const t = document.createElement('canvas');
+      t.width = Math.max(1, Math.round(c.width * s));
+      t.height = Math.max(1, Math.round(c.height * s));
+      t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
+      return t.toDataURL('image/jpeg', 0.7);
+    }
+
+    const loadImg = (f: File): Promise<HTMLImageElement | null> =>
+      new Promise((res) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        im.src = URL.createObjectURL(f);
+      });
+
+    const fitBox = (a: number, W: number, H: number): [number, number] => (a >= W / H ? [W, W / a] : [H * a, H]);
+    function scaleItem(it: FotoItem, d: number) {
+      const w = Math.max(0.5, it.w + d);
+      it.h = (it.h * w) / it.w;
+      it.w = w;
+    }
+
+    async function addFiles(files: FileList | File[]) {
+      const list = [...files].filter((f) => f.type.startsWith('image/'));
+      let bad = 0;
+      for (const f of list) {
+        const im = await loadImg(f);
+        if (!im) {
+          bad++;
+          continue;
+        }
+        const rect = { x: 0, y: 0, w: 1, h: 1 };
+        const bmp = makeBmp(im, rect);
+        const [w, h] = fitBox(bmp.width / bmp.height, 8, 8);
+        st.items.push({ id: st.uid++, src: im, rect, bmp, thumb: thumb(bmp), cap: '', w, h, lock: true, showCap: true });
+      }
+      const msg = $('#fl-msg');
+      if (msg) {
+        msg.textContent = !list.length
+          ? 'File harus berupa gambar.'
+          : bad
+            ? `${bad} file tidak bisa dibuka (coba JPG atau PNG).`
+            : '';
+      }
+      schedule();
+    }
+
+    const fileInput = $('#fl-file') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        const t = e.target as HTMLInputElement;
+        if (t.files) addFiles(t.files);
+        t.value = '';
+      });
+    }
+
+    const drop = $('#fl-drop');
+    if (drop) {
+      ['dragenter', 'dragover'].forEach((t) =>
+        drop.addEventListener(t, (e) => {
+          e.preventDefault();
+          drop.classList.add('border-accent');
+        })
+      );
+      ['dragleave', 'drop'].forEach((t) =>
+        drop.addEventListener(t, (e) => {
+          e.preventDefault();
+          drop.classList.remove('border-accent');
+        })
+      );
+      drop.addEventListener('drop', (e) => {
+        const dt = (e as DragEvent).dataTransfer;
+        if (dt?.files) addFiles(dt.files);
+      });
+    }
+
+    /* ---------- Crop Dialog & Interactive Canvas ---------- */
+    const dlg = $('#fl-dlg') as HTMLDialogElement;
+    const cv = $('#fl-cv') as HTMLCanvasElement;
+    const VP = 340, MIN = 24;
+    const RATIOS: [string, number][] = [
+      ['Bebas', 0],
+      ['1:1', 1],
+      ['4:3', 4 / 3],
+      ['3:2', 3 / 2],
+      ['16:9', 16 / 9],
+      ['3:4', 3 / 4],
+      ['2:3', 2 / 3],
+    ];
+
+    let cr: any = null;
+    let drag: any = null;
+
+    function openCrop(it: FotoItem): Promise<any> {
+      return new Promise((res) => {
+        const im = it.src;
+        const sc = Math.min(VP / im.width, VP / im.height);
+        const W = Math.round(im.width * sc);
+        const H = Math.round(im.height * sc);
+        const f = it.rect;
+        cr = { im, sc, W, H, ratio: 0, res, r: { x: f.x * W, y: f.y * H, w: f.w * W, h: f.h * H } };
+
+        ($('#fl-ew') as HTMLInputElement).value = String(+it.w.toFixed(2));
+        ($('#fl-eh') as HTMLInputElement).value = String(+it.h.toFixed(2));
+        ($('#fl-elock') as HTMLInputElement).checked = it.lock;
+        ($('#fl-ecap') as HTMLInputElement).value = it.cap;
+        ($('#fl-eshow') as HTMLInputElement).checked = it.showCap;
+        cr.pos = st.items.indexOf(it);
+        showPos();
+        renderChips();
+        dlg.showModal();
+        cdraw();
+      });
+    }
+
+    function renderChips() {
+      const chips = $('#fl-chips');
+      if (!chips) return;
+      chips.innerHTML = RATIOS.map(([n, v]) => {
+        const on = cr && cr.ratio === v;
+        return `<button type="button" data-v="${v}" class="rounded-sm border px-2 py-0.5 text-xs transition-colors ${on ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}">${n}</button>`;
+      }).join('');
+    }
+
+    function cfinish(v: any) {
+      if (!cr) return;
+      const r = cr.res;
+      cr = null;
+      if (dlg.open) dlg.close();
+      r(v);
+    }
+
+    dlg.addEventListener('close', () => cfinish(null));
+    $('#fl-skip').onclick = () => cfinish(null);
+    $('#fl-reset').onclick = () => {
+      cr.r = { x: 0, y: 0, w: cr.W, h: cr.H };
+      cr.ratio = 0;
+      renderChips();
+      cdraw();
+    };
+
+    const showPos = () => {
+      const epos = $('#fl-epos');
+      if (epos && cr) epos.textContent = `${cr.pos + 1} dari ${st.items.length}`;
+    };
+
+    $('#fl-eprev').onclick = () => {
+      if (cr) {
+        cr.pos = Math.max(0, cr.pos - 1);
+        showPos();
+      }
+    };
+    $('#fl-enext').onclick = () => {
+      if (cr) {
+        cr.pos = Math.min(st.items.length - 1, cr.pos + 1);
+        showPos();
+      }
+    };
+
+    function syncSize(k: 'w' | 'h') {
+      const elock = $('#fl-elock') as HTMLInputElement;
+      if (!cr || !elock.checked) return;
+      const a = cr.r.w / cr.r.h;
+      const ew = $('#fl-ew') as HTMLInputElement;
+      const eh = $('#fl-eh') as HTMLInputElement;
+      if (k === 'w') eh.value = String(+(+ew.value / a).toFixed(2));
+      else ew.value = String(+(+eh.value * a).toFixed(2));
+    }
+
+    $('#fl-ew').addEventListener('input', () => syncSize('w'));
+    $('#fl-eh').addEventListener('input', () => syncSize('h'));
+    $('#fl-elock').addEventListener('change', () => syncSize('w'));
+
+    $('#fl-edel').onclick = () => cfinish({ del: true });
+    $('#fl-ok').onclick = () => {
+      const { r, W, H } = cr;
+      const lock = ($('#fl-elock') as HTMLInputElement).checked;
+      const ew = $('#fl-ew') as HTMLInputElement;
+      const eh = $('#fl-eh') as HTMLInputElement;
+      const w = Math.max(0.5, +ew.value || 0.5);
+      const h = lock ? (w * r.h) / r.w : Math.max(0.5, +eh.value || 0.5);
+      cfinish({
+        rect: { x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H },
+        w,
+        h,
+        lock,
+        cap: ($('#fl-ecap') as HTMLInputElement).value,
+        showCap: ($('#fl-eshow') as HTMLInputElement).checked,
+        pos: cr.pos,
+      });
+    };
+
+    $('#fl-chips').addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('button');
+      if (!b) return;
+      const v = +b.dataset.v!, r = cr.r;
+      cr.ratio = v;
+      if (v) {
+        const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+        let w = r.w, h = r.h;
+        if (w / h > v) w = h * v;
+        else h = w / v;
+        cr.r = { x: clamp(cx - w / 2, 0, cr.W - w), y: clamp(cy - h / 2, 0, cr.H - h), w, h };
+      }
+      renderChips();
+      cdraw();
+    });
+
+    function cdraw() {
+      if (!cr) return;
+      const { W, H, r, im } = cr;
+      cv.width = W;
+      cv.height = H;
+      const c = cv.getContext('2d')!;
+      c.drawImage(im, 0, 0, W, H);
+      c.fillStyle = 'rgba(0,0,0,.55)';
+      c.fillRect(0, 0, W, r.y);
+      c.fillRect(0, r.y + r.h, W, H - r.y - r.h);
+      c.fillRect(0, r.y, r.x, r.h);
+      c.fillRect(r.x + r.w, r.y, W - r.x - r.w, r.h);
+      c.strokeStyle = '#3056d3';
+      c.lineWidth = 2;
+      c.strokeRect(r.x, r.y, r.w, r.h);
+      c.fillStyle = '#fff';
+      for (const px of [r.x, r.x + r.w / 2, r.x + r.w]) {
+        for (const py of [r.y, r.y + r.h / 2, r.y + r.h]) {
+          if (px !== r.x + r.w / 2 || py !== r.y + r.h / 2) c.fillRect(px - 4, py - 4, 8, 8);
+        }
+      }
+      const csz = $('#fl-csz');
+      if (csz) csz.textContent = `${Math.round(r.w / cr.sc)} × ${Math.round(r.h / cr.sc)} px`;
+      const elock = $('#fl-elock') as HTMLInputElement;
+      if (elock.checked) {
+        const ew = $('#fl-ew') as HTMLInputElement;
+        const eh = $('#fl-eh') as HTMLInputElement;
+        eh.value = String(+(+ew.value * r.h / r.w).toFixed(2));
+      }
+    }
+
+    const cpos = (e: PointerEvent): [number, number] => {
+      const b = cv.getBoundingClientRect();
+      return [((e.clientX - b.left) * cr.W) / b.width, ((e.clientY - b.top) * cr.H) / b.height];
+    };
+
+    cv.addEventListener('pointerdown', (e) => {
+      if (!cr) return;
+      const [px, py] = cpos(e), r = cr.r, T = 14;
+      const near = (a: number, b: number) => Math.abs(a - b) < T;
+      const inX = px >= r.x - T && px <= r.x + r.w + T;
+      const inY = py >= r.y - T && py <= r.y + r.h + T;
+      const f = {
+        l: inY && near(px, r.x),
+        r: inY && near(px, r.x + r.w) && !near(px, r.x),
+        t: inX && near(py, r.y),
+        b: inX && near(py, r.y + r.h) && !near(py, r.y),
+      };
+      const edge = f.l || f.r || f.t || f.b;
+      if (!edge && !(px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h)) return;
+      drag = { px, py, r0: { ...r }, f, move: !edge };
+      cv.setPointerCapture(e.pointerId);
+    });
+
+    cv.addEventListener('pointermove', (e) => {
+      if (!drag || !cr) return;
+      const [px, py] = cpos(e), dx = px - drag.px, dy = py - drag.py;
+      const { W, H } = cr, o = drag.r0, f = drag.f;
+      if (drag.move) {
+        cr.r = { ...o, x: clamp(o.x + dx, 0, W - o.w), y: clamp(o.y + dy, 0, H - o.h) };
+        return cdraw();
+      }
+      let x = o.x, y = o.y, x2 = o.x + o.w, y2 = o.y + o.h;
+      if (f.l) x = clamp(x + dx, 0, x2 - MIN);
+      if (f.r) x2 = clamp(x2 + dx, x + MIN, W);
+      if (f.t) y = clamp(y + dy, 0, y2 - MIN);
+      if (f.b) y2 = clamp(y2 + dy, y + MIN, H);
+      let w = x2 - x, h = y2 - y;
+      if (cr.ratio) {
+        const q = cr.ratio;
+        if (f.l || f.r) {
+          h = w / q;
+          if (f.t) y = y2 - h;
+          else if (!f.b) y = o.y + (o.h - h) / 2;
+        } else {
+          w = h * q;
+          x = o.x + (o.w - w) / 2;
+        }
+        if (x < 0 || y < 0 || x + w > W + 0.5 || y + h > H + 0.5) return;
+      }
+      cr.r = { x, y, w, h };
+      cdraw();
+    });
+
+    cv.addEventListener('pointerup', () => {
+      drag = null;
+    });
+
+    /* ---------- Layout Engine & Pagination ---------- */
+    function wrap(c: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+      const out: string[] = [];
+      let line = '';
+      for (const w of text.split(/\s+/)) {
+        const t = line ? line + ' ' + w : w;
+        if (c.measureText(t).width > maxW && line) {
+          out.push(line);
+          line = w;
+        } else line = t;
+      }
+      if (line) out.push(line);
+      return out;
+    }
+
+    const FS = 3.5, LH = FS * 1.3, CAPW = 28;
+    const mctx = document.createElement('canvas').getContext('2d')!;
+    const capText = (it: FotoItem, no: number) =>
+      st.cap && it.showCap ? ((st.num ? `Gambar ${no}. ` : '') + it.cap).trim() : '';
+
+    function makeCell(it: FotoItem, no: number, s: number) {
+      const w = it.w * 10 * s, h = it.h * 10 * s, txt = capText(it, no), cw = txt ? Math.max(w, CAPW) : w;
+      mctx.font = `${FS * 10}px Arial,Helvetica,sans-serif`;
+      const lines = txt ? wrap(mctx, txt, cw * 10).slice(0, 3) : [];
+      const capH = lines.length ? 1.5 + lines.length * LH : 0;
+      return { it, no, w, h, cw, lines, capH, ch: h + capH };
+    }
+
+    function layout() {
+      const [pw, ph] = paper(), { m, g } = st, CW = pw - 2 * m, CH = ph - 2 * m;
+      const cells = st.items.map((it, i) => {
+        const c = makeCell(it, i + 1, 1), s = Math.min(1, CW / c.cw, (CH - c.capH) / c.h);
+        return s < 1 ? makeCell(it, i + 1, s) : c;
+      });
+      const rows: any[] = [];
+      let cur: any = { cells: [], w: 0, h: 0 };
+      for (const c of cells) {
+        if (cur.cells.length && cur.w + g + c.cw > CW + 0.01) {
+          rows.push(cur);
+          cur = { cells: [], w: 0, h: 0 };
+        }
+        cur.w += (cur.cells.length ? g : 0) + c.cw;
+        cur.h = Math.max(cur.h, c.ch);
+        cur.cells.push(c);
+      }
+      if (cur.cells.length) rows.push(cur);
+      const pages: any[] = [];
+      let page: any = null, y = m;
+      for (const r of rows) {
+        if (!page || (y > m && y + r.h > ph - m + 0.01)) {
+          page = [];
+          pages.push(page);
+          y = m;
+        }
+        let x = m + (st.center ? (CW - r.w) / 2 : 0);
+        for (const c of r.cells) {
+          page.push({ ...c, x, y, bx: x + (c.cw - c.w) / 2, by: y });
+          x += c.cw + g;
+        }
+        y += r.h + g;
+      }
+      return { pw, ph, pages };
+    }
+
+    function paintCell(c: CanvasRenderingContext2D, k: number, p: any) {
+      const im = p.it.bmp, iw = im.width, ih = im.height;
+      let dx = p.bx, dy = p.by, dw = p.w, dh = p.h;
+      if (st.fit === 'cover') {
+        const s = Math.max(p.w / iw, p.h / ih), sw = p.w / s, sh = p.h / s;
+        c.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, dx * k, dy * k, dw * k, dh * k);
+      } else {
+        const s = Math.min(p.w / iw, p.h / ih);
+        dw = iw * s;
+        dh = ih * s;
+        dx += (p.w - dw) / 2;
+        dy += (p.h - dh) / 2;
+        c.drawImage(im, dx * k, dy * k, dw * k, dh * k);
+      }
+      if (st.border) {
+        c.strokeStyle = '#222';
+        c.lineWidth = 0.25 * k;
+        c.strokeRect(dx * k, dy * k, dw * k, dh * k);
+      }
+      c.fillStyle = '#111';
+      c.font = `${FS * k}px Arial,Helvetica,sans-serif`;
+      c.textAlign = 'center';
+      c.textBaseline = 'top';
+      p.lines.forEach((l: string, i: number) => c.fillText(l, (p.x + p.cw / 2) * k, (p.by + p.h + 1.5 + i * LH) * k));
+    }
+
+    function paintPage(cv: HTMLCanvasElement, list: any[], pw: number, ph: number, dpi: number) {
+      const k = dpi / 25.4;
+      cv.width = Math.round(pw * k);
+      cv.height = Math.round(ph * k);
+      const c = cv.getContext('2d')!;
+      c.fillStyle = '#fff';
+      c.fillRect(0, 0, cv.width, cv.height);
+      if (!list.length) {
+        c.fillStyle = '#8a96a3';
+        c.font = `${4.5 * k}px Arial,sans-serif`;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.fillText('Belum ada foto. Unggah foto di panel kiri.', cv.width / 2, cv.height / 2);
+        return;
+      }
+      list.forEach((p) => paintCell(c, k, p));
+    }
+
+    let lastL: any = null;
+    async function editItem(it: FotoItem) {
+      const r = await openCrop(it);
+      if (!r) return;
+      if (r.del) st.items = st.items.filter((x) => x !== it);
+      else {
+        it.rect = r.rect;
+        it.bmp = makeBmp(it.src, r.rect);
+        it.thumb = thumb(it.bmp);
+        it.w = r.w;
+        it.h = r.h;
+        it.lock = r.lock;
+        it.cap = r.cap;
+        it.showCap = r.showCap;
+        st.items.splice(st.items.indexOf(it), 1);
+        st.items.splice(r.pos, 0, it);
+      }
+      schedule();
+    }
+
+    function pickAt(ev: MouseEvent, pi: number) {
+      if (!lastL) return;
+      const cvEl = ev.currentTarget as HTMLCanvasElement;
+      const b = cvEl.getBoundingClientRect();
+      const x = ((ev.clientX - b.left) / b.width) * lastL.pw;
+      const y = ((ev.clientY - b.top) / b.height) * lastL.ph;
+      const p = (lastL.pages[pi] || []).find((p: any) => x >= p.x && x <= p.x + p.cw && y >= p.y && y <= p.y + p.ch);
+      if (p) editItem(p.it);
+    }
+
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(renderPages);
+    };
+
+    function renderPages() {
+      const L = layout();
+      const box = $('#fl-preview');
+      const arr = L.pages.length ? L.pages : [[]];
+      const top = box.scrollTop;
+      lastL = L;
+      box.innerHTML = arr
+        .map(
+          (_, i) =>
+            `<div class="fl-pg w-full max-w-[620px] shrink-0"><canvas class="w-full h-auto bg-white shadow-sm border border-line"></canvas><div class="fl-lab font-mono text-xs text-center text-muted mt-2">Halaman ${i + 1} dari ${arr.length}</div></div>`
+        )
+        .join('');
+      box.querySelectorAll('canvas').forEach((c, i) => {
+        paintPage(c, arr[i], L.pw, L.ph, 150);
+        if (L.pages.length) {
+          c.style.cursor = 'pointer';
+          c.title = 'Klik foto untuk mengedit';
+          c.onclick = (ev) => pickAt(ev, i);
+        }
+      });
+      box.scrollTop = top;
+      const info = $('#fl-info');
+      if (info) info.textContent = st.items.length ? `${st.items.length} foto di ${L.pages.length} halaman.` : '';
+    }
+
+    /* ---------- Settings & Presets Handlers ---------- */
+    const presetsDiv = $('#fl-presets');
+    if (presetsDiv) {
+      presetsDiv.innerHTML = [1, 2, 3, 4]
+        .map((n) => `<button type="button" data-n="${n}" class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted hover:border-accent hover:text-accent">${n} kolom</button>`)
+        .join('');
+      presetsDiv.addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest('button');
+        if (!b) return;
+        setCols(+b.dataset.n!);
+        schedule();
+      });
+    }
+
+    const bind = (id: string, fn: (t: any) => void) =>
+      $('#' + id)?.addEventListener('input', (e) => {
+        fn(e.target);
+        schedule();
+      });
+
+    bind('fl-center', (t) => (st.center = t.checked));
+    $('#fl-step')?.addEventListener('input', (e) => {
+      st.step = Math.max(0.1, +(e.target as HTMLInputElement).value || 1);
+    });
+    $('#fl-allDec').onclick = () => {
+      st.items.forEach((it) => scaleItem(it, -st.step));
+      schedule();
+    };
+    $('#fl-allInc').onclick = () => {
+      st.items.forEach((it) => scaleItem(it, st.step));
+      schedule();
+    };
+    $('#fl-allSet').onclick = () => {
+      const aw = $('#fl-aw') as HTMLInputElement;
+      const ah = $('#fl-ah') as HTMLInputElement;
+      const aforce = $('#fl-aforce') as HTMLInputElement;
+      setBox(Math.max(0.5, +aw.value || 4), Math.max(0.5, +ah.value || 4), aforce.checked);
+      schedule();
+    };
+    bind('fl-fit', (t) => (st.fit = t.value));
+    bind('fl-cap', (t) => (st.cap = t.checked));
+    bind('fl-num', (t) => (st.num = t.checked));
+    bind('fl-border', (t) => (st.border = t.checked));
+    bind('fl-margin', (t) => (st.m = clamp(+t.value || 0, 0, 50)));
+    bind('fl-gap', (t) => (st.g = clamp(+t.value || 0, 0, 30)));
+    bind('fl-orient', (t) => (st.land = t.value === 'l'));
+    bind('fl-paper', (t) => {
+      st.paper = t.value;
+      const customDim = $('#fl-custom-dim');
+      if (customDim) {
+        if (st.paper === 'Custom') customDim.classList.replace('hidden', 'grid');
+        else customDim.classList.replace('grid', 'hidden');
+      }
+    });
+    bind('fl-pwid', (t) => {
+      const v = +t.value;
+      if (v >= 30 && v <= 2000) st.custom.w = v;
+    });
+    bind('fl-phei', (t) => {
+      const v = +t.value;
+      if (v >= 30 && v <= 2000) st.custom.h = v;
+    });
+
+    function setCols(n: number) {
+      const [pw] = paper(), W = Math.max(0.5, (pw - 2 * st.m - (n - 1) * st.g) / n / 10 - 0.01);
+      for (const it of st.items) {
+        it.w = W;
+        it.h = (W * it.bmp.height) / it.bmp.width;
+        it.lock = true;
+      }
+    }
+    function setBox(W: number, H: number, force: boolean) {
+      for (const it of st.items) {
+        if (force) {
+          it.w = W;
+          it.h = H;
+          it.lock = false;
+        } else {
+          [it.w, it.h] = fitBox(it.bmp.width / it.bmp.height, W, H);
+          it.lock = true;
+        }
+      }
+    }
+
+    const PKEY = 'fotolaporan.presets';
+    const say = (t: string) => {
+      const pmsg = $('#fl-pmsg');
+      if (pmsg) pmsg.textContent = t;
+    };
+    const fmtN = (n: number) => String(+(+n).toFixed(2));
+    const esc = (t: string) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c));
+    const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preset';
+
+    let userPresets: any[] = [];
+    try {
+      const stored = localStorage.getItem(PKEY);
+      if (stored) userPresets = JSON.parse(stored);
+    } catch (_) {}
+
+    const persist = () => {
+      try {
+        localStorage.setItem(PKEY, JSON.stringify(userPresets));
+      } catch (_) {
+        say('Preset tidak bisa disimpan di browser ini. Gunakan Ekspor.');
+      }
+    };
+
+    function syncUI() {
+      ($('#fl-paper') as HTMLSelectElement).value = st.paper;
+      ($('#fl-orient') as HTMLSelectElement).value = st.land ? 'l' : 'p';
+      ($('#fl-pwid') as HTMLInputElement).value = String(st.custom.w);
+      ($('#fl-phei') as HTMLInputElement).value = String(st.custom.h);
+      const customDim = $('#fl-custom-dim');
+      if (customDim) {
+        if (st.paper === 'Custom') customDim.classList.replace('hidden', 'grid');
+        else customDim.classList.replace('grid', 'hidden');
+      }
+      ($('#fl-margin') as HTMLInputElement).value = String(st.m);
+      ($('#fl-gap') as HTMLInputElement).value = String(st.g);
+      ($('#fl-fit') as HTMLSelectElement).value = st.fit;
+      ($('#fl-cap') as HTMLInputElement).checked = st.cap;
+      ($('#fl-num') as HTMLInputElement).checked = st.num;
+      ($('#fl-border') as HTMLInputElement).checked = st.border;
+      ($('#fl-center') as HTMLInputElement).checked = st.center;
+    }
+
+    function applyPreset(q: any) {
+      Object.assign(st, q.s, { custom: { ...q.s.custom } });
+      syncUI();
+      if (q.size.t === 'cols') setCols(q.size.n);
+      else if (q.size.t === 'box') {
+        setBox(q.size.w, q.size.h, q.size.force);
+        ($('#fl-aw') as HTMLInputElement).value = String(q.size.w);
+        ($('#fl-ah') as HTMLInputElement).value = String(q.size.h);
+        ($('#fl-aforce') as HTMLInputElement).checked = q.size.force;
+      }
+      schedule();
+    }
+
+    function renderPresets() {
+      const plist = $('#fl-plist');
+      if (!plist) return;
+      if (!userPresets.length) {
+        plist.innerHTML = '<p class="text-muted text-[11px]">Belum ada preset tersimpan.</p>';
+        return;
+      }
+      plist.innerHTML = userPresets
+        .map((q, i) => {
+          const dim = q.s.paper === 'Custom' ? `${fmtN(q.s.custom.w)}×${fmtN(q.s.custom.h)} mm` : q.s.paper;
+          const sz = q.size.t === 'cols' ? `${q.size.n} kolom` : q.size.t === 'box' ? `${fmtN(q.size.w)}×${fmtN(q.size.h)} cm` : 'ukuran tetap';
+          return `<div class="flex items-center justify-between gap-2 rounded-sm border border-line bg-paper px-2 py-1"><button type="button" data-a="apply" data-i="${i}" class="flex-1 text-left"><span class="font-medium text-ink">${esc(q.name)}</span> <small class="text-muted">(${dim}, ${sz})</small></button><div class="flex gap-1"><button type="button" data-a="export" data-i="${i}" class="text-[11px] text-muted hover:text-ink">Ekspor</button><button type="button" data-a="del" data-i="${i}" class="text-[11px] text-red-500 hover:text-red-600">Hapus</button></div></div>`;
+        })
+        .join('');
+    }
+
+    $('#fl-plist')?.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('button');
+      if (!b) return;
+      const i = +b.dataset.i!, a = b.dataset.a!, q = userPresets[i];
+      if (!q) return;
+      if (a === 'apply') {
+        applyPreset(q);
+        say(`Preset “${q.name}” diterapkan.`);
+      } else if (a === 'export') {
+        exportPresets([q], `preset-${slug(q.name)}.json`);
+      } else if (a === 'del') {
+        userPresets.splice(i, 1);
+        persist();
+        renderPresets();
+        say(`Preset “${q.name}” dihapus.`);
+      }
+    });
+
+    $('#fl-psave').onclick = () => {
+      const name = ($('#fl-pname') as HTMLInputElement).value.trim();
+      if (!name) {
+        say('Isi nama preset dulu.');
+        return;
+      }
+      const z = ($('#fl-psize') as HTMLSelectElement).value;
+      const aw = $('#fl-aw') as HTMLInputElement;
+      const ah = $('#fl-ah') as HTMLInputElement;
+      const aforce = $('#fl-aforce') as HTMLInputElement;
+      const size = z[0] === 'c' ? { t: 'cols', n: +z.slice(1) } : z === 'box' ? { t: 'box', w: +aw.value || 4, h: +ah.value || 4, force: aforce.checked } : { t: 'none' };
+      const q = { name, s: { ...st, custom: { ...st.custom } }, size };
+      const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
+      if (k >= 0) userPresets[k] = q;
+      else userPresets.push(q);
+      persist();
+      ($('#fl-pname') as HTMLInputElement).value = '';
+      renderPresets();
+      say(`Preset “${q.name}” disimpan.`);
+    };
+
+    function exportPresets(list: any[], filename: string) {
+      const text = JSON.stringify({ format: 'foto-laporan-preset', version: 1, presets: list }, null, 2);
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      say('File preset diunduh.');
+    }
+
+    $('#fl-pexp').onclick = () => {
+      if (!userPresets.length) {
+        say('Belum ada preset untuk diekspor.');
+        return;
+      }
+      exportPresets(userPresets, 'preset-foto-laporan.json');
+    };
+
+    $('#fl-pimp').onclick = () => ($('#fl-pfile') as HTMLInputElement).click();
+    $('#fl-pfile')?.addEventListener('change', async (e) => {
+      const f = (e.target as HTMLInputElement).files?.[0];
+      if (!f) return;
+      importText(await f.text());
+      (e.target as HTMLInputElement).value = '';
+    });
+
+    function importText(text: string) {
+      try {
+        const j = JSON.parse(text);
+        const arr = Array.isArray(j) ? j : Array.isArray(j.presets) ? j.presets : [j];
+        if (!arr.length) throw 0;
+        for (const q of arr) {
+          if (!q.name) continue;
+          const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
+          if (k >= 0) userPresets[k] = q;
+          else userPresets.push(q);
+        }
+        persist();
+        renderPresets();
+        say(`${arr.length} preset diimpor.`);
+      } catch (_) {
+        say('Teks atau file bukan preset valid.');
+      }
+    }
+
+    $('#fl-ptoggle').onclick = () => {
+      const pbox = $('#fl-pbox');
+      pbox.classList.toggle('hidden');
+    };
+    $('#fl-pclose').onclick = () => {
+      $('#fl-pbox').classList.add('hidden');
+    };
+    $('#fl-ptextimp').onclick = () => {
+      const v = ($('#fl-ptext') as HTMLTextAreaElement).value.trim();
+      if (!v) return;
+      importText(v);
+    };
+    $('#fl-pcopy').onclick = async () => {
+      const t = $('#fl-ptext') as HTMLTextAreaElement;
+      if (!t.value) return;
+      await navigator.clipboard.writeText(t.value);
+      say('Teks JSON disalin.');
+    };
+
+    renderPresets();
+
+    /* ---------- Pure Binary PDF Generation ---------- */
+    async function buildPDF(): Promise<Blob> {
+      const [pw, ph] = paper(), f = (v: number) => ((v * 72) / 25.4).toFixed(2), imgs: any[] = [];
+      for (const p of layout().pages) {
+        const c = document.createElement('canvas');
+        paintPage(c, p, pw, ph, 200);
+        const b = await new Promise<Blob>((r) => c.toBlob(r as any, 'image/jpeg', 0.92));
+        imgs.push({ bytes: new Uint8Array(await b.arrayBuffer()), w: c.width, h: c.height });
+      }
+      const enc = new TextEncoder(), parts: any[] = [], offs: number[] = [];
+      let len = 0;
+      const put = (b: any) => {
+        if (typeof b === 'string') b = enc.encode(b);
+        parts.push(b);
+        len += b.length;
+      };
+      const obj = (i: number, s: string) => {
+        offs[i] = len;
+        put(`${i} 0 obj\n${s}\nendobj\n`);
+      };
+      const total = 3 + imgs.length * 3;
+      put('%PDF-1.4\n');
+      obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+      obj(2, `<< /Type /Pages /Kids [${imgs.map((_, i) => 4 + 3 * i + ' 0 R').join(' ')}] /Count ${imgs.length} >>`);
+      imgs.forEach((im, i) => {
+        const a = 3 + 3 * i;
+        offs[a] = len;
+        put(`${a} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);
+        put(im.bytes);
+        put('\nendstream\nendobj\n');
+        obj(a + 1, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(pw)} ${f(ph)}] /Resources << /XObject << /Im ${a} 0 R >> >> /Contents ${a + 2} 0 R >>`);
+        const c = `q ${f(pw)} 0 0 ${f(ph)} 0 0 cm /Im Do Q`;
+        obj(a + 2, `<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
+      });
+      const xr = len;
+      let x = `xref\n0 ${total}\n0000000000 65535 f \n`;
+      for (let i = 1; i < total; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+      put(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+      return new Blob(parts, { type: 'application/pdf' });
+    }
+
+    $('#fl-print').onclick = () => {
+      if (!st.items.length) {
+        say('Tambahkan foto dulu sebelum mencetak.');
+        return;
+      }
+      window.print();
+    };
+
+    $('#fl-pdf').onclick = async () => {
+      if (!st.items.length) {
+        say('Tambahkan foto dulu.');
+        return;
+      }
+      say('Menyiapkan file PDF…');
+      try {
+        const pdfBlob = await buildPDF();
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'foto-laporan.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        say('PDF berhasil diunduh.');
+      } catch (err) {
+        say('Gagal membuat PDF. Gunakan tombol Cetak untuk opsi PDF browser.');
+      }
+    };
+
+    renderPages();
+  }
+
+  initFotoLaporan();
+  document.addEventListener('astro:page-load', initFotoLaporan);
+</script>
