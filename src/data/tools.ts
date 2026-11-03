@@ -19,25 +19,6 @@ export interface ToolItem {
 
 export const tools: ToolItem[] = [
   {
-    id: 'starter-card',
-    title: {
-      en: 'Quick Card Generator',
-      id: 'Pembuat Kartu Cepat',
-    },
-    description: {
-      en: 'A starter proof-of-concept utility tool: customize text, theme, and instant badge with live preview.',
-      id: 'Tool starter percontohan wadah: kustomisasi teks, tema, dan badge instan dengan preview langsung.',
-    },
-    category: 'utility',
-    icon: 'cube',
-    status: 'ready',
-    badge: {
-      en: 'Starter Demo',
-      id: 'Demo Starter',
-    },
-    tags: ['generator', 'utility', 'demo'],
-  },
-  {
     id: 'foto-laporan',
     title: {
       en: 'Field Report Photo Stamping',
