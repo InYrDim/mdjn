@@ -1,0 +1,94 @@
+---
+import Layout from './Layout.astro';
+import type { ToolItem } from '../data/tools';
+import { useTranslations, useTranslatedPath, type Lang } from '../i18n/utils';
+
+export interface Props {
+  tool: ToolItem;
+  lang: Lang;
+}
+
+const { tool, lang } = Astro.props;
+const t = useTranslations(lang);
+const tp = useTranslatedPath(lang);
+
+const title = tool.title[lang];
+const description = tool.description[lang];
+const badgeText = tool.badge ? tool.badge[lang] : undefined;
+---
+
+<Layout
+  title={`${title} - Muh. Dimas Januardi Nur`}
+  description={description}
+  lang={lang}
+  path={`/tools/${tool.id}`}
+>
+  <article class="mx-auto max-w-5xl px-6 py-12 sm:py-16">
+    <!-- Back to tools link (identical to blog and artifacts back links) -->
+    <a href={tp('/tools')} class="text-sm text-muted hover:text-accent">
+      {t('tools.back')}
+    </a>
+
+    <!-- Tool Title -->
+    <h1 class="mt-6 font-display text-4xl sm:text-5xl">{title}</h1>
+
+    <!-- Meta row (category, status, client-side note) -->
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
+      <span class="rounded-sm bg-ink/[0.06] px-2.5 py-1 font-medium text-ink/80 text-xs">
+        {t(`tools.category.${tool.category}` as keyof typeof t)}
+      </span>
+
+      {badgeText && (
+        <>
+          <span class="h-3 w-px bg-line" aria-hidden="true" />
+          <span class="rounded-sm border border-line px-2 py-0.5 text-xs text-muted">
+            {badgeText}
+          </span>
+        </>
+      )}
+
+      <span class="h-3 w-px bg-line" aria-hidden="true" />
+      {tool.status === 'ready' ? (
+        <span class="inline-flex items-center gap-1.5 font-mono text-xs text-emerald-600 dark:text-emerald-400">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          {t('tools.status.ready')}
+        </span>
+      ) : (
+        <span class="font-mono text-xs text-muted">
+          {t('tools.status.comingSoon')}
+        </span>
+      )}
+
+      <span class="h-3 w-px bg-line" aria-hidden="true" />
+      <span class="font-mono text-xs text-muted">
+        {t('tools.privacyBadge')}
+      </span>
+    </div>
+
+    <!-- Intro description -->
+    <p class="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink/80">
+      {description}
+    </p>
+
+    <!-- Workspace Area -->
+    <div class="mt-10 border-t border-line pt-8">
+      {tool.status === 'ready' ? (
+        <slot />
+      ) : (
+        <div class="rounded-sm border border-line p-6 sm:p-8">
+          <h2 class="font-display text-xl font-medium text-ink">
+            {t('tools.comingSoonHeading')}
+          </h2>
+          <p class="mt-2 text-sm text-ink/70 leading-relaxed max-w-[60ch]">
+            {t('tools.comingSoonNotice')}
+          </p>
+          <div class="mt-6 border-t border-line/60 pt-4 font-mono text-xs text-muted space-y-1.5">
+            <div>· Execution: 100% Client-Side Web APIs</div>
+            <div>· Data Privacy: Zero uploads (files stay in your browser memory)</div>
+            <div>· Availability: Scheduled in upcoming release</div>
+          </div>
+        </div>
+      )}
+    </div>
+  </article>
+</Layout>

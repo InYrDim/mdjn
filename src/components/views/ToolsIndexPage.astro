@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ToolIcon from '../tools/ToolIcon.astro';
+import { tools, type ToolCategory } from '../../data/tools';
+import { useTranslations, useTranslatedPath, type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const tp = useTranslatedPath(lang);
+
+const categories: { key: 'all' | ToolCategory; label: string }[] = [
+  { key: 'all', label: t('tools.allCategories') },
+  { key: 'photo', label: t('tools.category.photo') },
+  { key: 'document', label: t('tools.category.document') },
+  { key: 'utility', label: t('tools.category.utility') },
+];
+
+const categoryCounts = {
+  all: tools.length,
+  photo: tools.filter((tool) => tool.category === 'photo').length,
+  document: tools.filter((tool) => tool.category === 'document').length,
+  utility: tools.filter((tool) => tool.category === 'utility').length,
+};
+---
+
+<Layout
+  title={t('tools.title')}
+  description={t('tools.description')}
+  lang={lang}
+  path="/tools"
+>
+  <section class="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+    <!-- Header -->
+    <h1 class="font-display text-4xl sm:text-5xl">{t('tools.heading')}</h1>
+    <p class="mt-4 max-w-[60ch] text-ink/70">{t('tools.description')}</p>
+
+    <!-- Search & Filter Controls -->
+    <div class="mt-8 space-y-4">
+      <!-- Search Input -->
+      <div class="relative">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted">
+          <ToolIcon name="magnifying-glass" size={15} />
+        </div>
+        <input
+          type="search"
+          id="tools-search-input"
+          placeholder={t('tools.searchPlaceholder')}
+          autocomplete="off"
+          class="w-full rounded-sm border border-line bg-transparent py-2 pl-9 pr-4 text-sm text-ink placeholder:text-muted/60 transition-colors focus:border-accent focus:outline-none"
+        />
+      </div>
+
+      <!-- Category Filter Pills (matching ArtifactIndexPage nav style) -->
+      <nav aria-label="Tool categories" class="flex flex-wrap gap-2">
+        {
+          categories.map((cat, idx) => (
+            <button
+              type="button"
+              class:list={[
+                'tool-category-btn rounded-sm border px-2.5 py-1 text-xs transition-colors',
+                idx === 0
+                  ? 'border-accent text-accent font-medium'
+                  : 'border-line text-muted hover:border-accent hover:text-accent',
+              ]}
+              data-category={cat.key}
+              aria-pressed={idx === 0 ? 'true' : 'false'}
+            >
+              <span>{cat.label}</span>
+              <span class="ml-1 font-mono text-[11px] tabular-nums opacity-60">
+                {categoryCounts[cat.key]}
+              </span>
+            </button>
+          ))
+        }
+      </nav>
+    </div>
+
+    <!-- Tools List (Editorial style matching Projects, Blog, and Artifacts) -->
+    <div id="tools-list" class="mt-8 border-t border-line">
+      {
+        tools.map((tool) => {
+          const title = tool.title[lang];
+          const description = tool.description[lang];
+          const badgeText = tool.badge ? tool.badge[lang] : undefined;
+          const searchTokens = `${title} ${description} ${tool.tags.join(' ')}`.toLowerCase();
+
+          return (
+            <a
+              href={tp(`/tools/${tool.id}`)}
+              class="tool-item group block border-b border-line py-6 transition-colors hover:bg-ink/[0.03]"
+              data-tool-item
+              data-category={tool.category}
+              data-search={searchTokens}
+            >
+              <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-muted transition-colors group-hover:text-accent">
+                    <ToolIcon name={tool.icon} size={18} />
+                  </span>
+                  <h2 class="font-display text-xl group-hover:text-accent">
+                    {title}
+                  </h2>
+                </div>
+
+                {tool.status === 'ready' ? (
+                  <span class="inline-flex items-center gap-1.5 font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {t('tools.status.ready')}
+                  </span>
+                ) : (
+                  <span class="font-mono text-xs text-muted">
+                    {t('tools.status.comingSoon')}
+                  </span>
+                )}
+              </div>
+
+              <p class="mt-2 max-w-[60ch] text-ink/70">
+                {description}
+              </p>
+
+              <ul class="mt-3 flex flex-wrap items-center gap-2">
+                <li class="rounded-sm bg-ink/[0.06] px-2.5 py-1 text-xs font-medium text-ink/80">
+                  {t(`tools.category.${tool.category}` as keyof typeof t)}
+                </li>
+                {badgeText && (
+                  <li class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted">
+                    {badgeText}
+                  </li>
+                )}
+                {tool.tags.map((tag) => (
+                  <li class="rounded-sm border border-line px-2.5 py-1 text-xs text-muted">
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <!-- Empty State -->
+    <div
+      id="tools-empty-state"
+      class="hidden mt-10 text-ink/70"
+    >
+      <p>{t('tools.emptyHeading')}. {t('tools.emptyDescription')}</p>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  function setupToolsFilter() {
+    const searchInput = document.getElementById('tools-search-input') as HTMLInputElement | null;
+    const categoryButtons = document.querySelectorAll<HTMLButtonElement>('.tool-category-btn');
+    const items = document.querySelectorAll<HTMLElement>('[data-tool-item]');
+    const emptyState = document.getElementById('tools-empty-state');
+
+    if (!items.length) return;
+
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    function filterTools() {
+      let visibleCount = 0;
+      const normalizedQuery = searchQuery.trim().toLowerCase();
+
+      items.forEach((item) => {
+        const itemCategory = item.getAttribute('data-category') || '';
+        const itemSearchText = item.getAttribute('data-search') || '';
+
+        const matchesCategory = activeCategory === 'all' || itemCategory === activeCategory;
+        const matchesSearch = !normalizedQuery || itemSearchText.includes(normalizedQuery);
+
+        if (matchesCategory && matchesSearch) {
+          item.style.display = '';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      if (emptyState) {
+        if (visibleCount === 0) {
+          emptyState.classList.remove('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+        }
+      }
+    }
+
+    categoryButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cat = btn.getAttribute('data-category') || 'all';
+        activeCategory = cat;
+
+        categoryButtons.forEach((b) => {
+          const isSelected = b === btn;
+          b.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+          if (isSelected) {
+            b.classList.remove('border-line', 'text-muted');
+            b.classList.add('border-accent', 'text-accent', 'font-medium');
+          } else {
+            b.classList.remove('border-accent', 'text-accent', 'font-medium');
+            b.classList.add('border-line', 'text-muted');
+          }
+        });
+
+        filterTools();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = (e.target as HTMLInputElement).value;
+        filterTools();
+      });
+    }
+  }
+
+  setupToolsFilter();
+  document.addEventListener('astro:page-load', setupToolsFilter);
+</script>

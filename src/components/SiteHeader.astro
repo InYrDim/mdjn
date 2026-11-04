@@ -18,6 +18,7 @@ const navItems = [
   { href: '/#work', key: 'nav.work' },
   { href: '/blog', key: 'nav.blog' },
   { href: '/artifacts', key: 'nav.artifacts' },
+  { href: '/tools', key: 'nav.tools' },
   { href: '/about', key: 'nav.about' },
   { href: '/#contact', key: 'nav.contact' },
 ] as const;
@@ -39,8 +40,8 @@ const switchHref = (code: Lang) => {
       InYrDim
     </a>
 
-    <!-- Desktop nav: single line, 5 items + controls fit comfortably at h-16. -->
-    <nav class="hidden items-center gap-6 text-sm md:flex" aria-label="Main">
+    <!-- Desktop nav: single line, items + controls fit comfortably at h-16. -->
+    <nav class="hidden items-center gap-4 text-sm md:flex lg:gap-6" aria-label="Main">
       {
         navItems.map((item) => (
           <a href={tp(item.href)} class="text-ink/80 transition-colors hover:text-ink">

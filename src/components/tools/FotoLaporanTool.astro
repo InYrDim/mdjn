@@ -1,0 +1,1711 @@
+---
+import { type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<!-- Dynamic @page style element for print page dimension setting -->
+<style id="pg"></style>
+
+<div class="fl-workspace rounded-sm border border-line bg-paper text-ink shadow-xs overflow-hidden">
+  <div class="fl-app">
+    <!-- LEFT SIDEBAR -->
+    <aside class="fl-side">
+      <div class="fl-top">
+        <h2 class="fl-title">Foto laporan</h2>
+        <p class="fl-hint">Unggah foto, lalu klik foto di pratinjau untuk crop, ukuran, keterangan, dan urutan.</p>
+      </div>
+
+      <div class="fl-scroll">
+        <!-- File Drop Area -->
+        <label class="fl-drop" id="drop">
+          <input type="file" id="file" accept="image/*" multiple />
+          Pilih foto
+          <small>atau tarik file ke sini</small>
+        </label>
+        <p id="msg" role="status" class="fl-hint"></p>
+
+        <!-- Preset Section -->
+        <details open>
+          <summary>Preset</summary>
+          <div class="fl-pset">
+            <div class="fl-plist" id="plist"></div>
+            <div class="fl-save">
+              <input type="text" id="pname" maxlength="60" placeholder="Nama preset baru" aria-label="Nama preset baru" />
+              <select id="psize" aria-label="Ukuran foto pada preset">
+                <option value="none">Ukuran foto tidak diubah</option>
+                <option value="c1">Bagi 1 kolom</option>
+                <option value="c2">Bagi 2 kolom</option>
+                <option value="c3">Bagi 3 kolom</option>
+                <option value="c4">Bagi 4 kolom</option>
+                <option value="box">Kotak dari “Ukuran semua foto”</option>
+              </select>
+              <button type="button" id="psave">Simpan pengaturan saat ini</button>
+            </div>
+            <div class="fl-acts">
+              <button type="button" id="pimp">Impor</button>
+              <button type="button" id="pexp">Ekspor semua</button>
+              <button type="button" id="ptoggle">Tempel teks</button>
+            </div>
+            <input type="file" id="pfile" accept=".json,application/json" hidden />
+            <div id="pbox" hidden>
+              <textarea id="ptext" rows="5" spellcheck="false" placeholder="Teks preset muncul di sini. Atau tempel teks preset lalu klik Impor teks." aria-label="Teks preset"></textarea>
+              <div class="fl-acts">
+                <button type="button" id="pcopy">Salin teks</button>
+                <button type="button" id="ptextimp">Impor teks</button>
+                <button type="button" id="pclose">Tutup</button>
+              </div>
+            </div>
+            <p class="fl-hint" id="pmsg" role="status"></p>
+          </div>
+        </details>
+
+        <!-- Susunan Section -->
+        <details>
+          <summary>Susunan</summary>
+          <div class="fl-grid">
+            <p class="fl-hint fl-full">Bagi lebar semua foto menurut jumlah kolom:</p>
+            <div class="fl-presets fl-full" id="presets" aria-label="Bagi jadi kolom"></div>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="center" checked /> Rata tengah tiap baris
+            </label>
+            <label class="fl-full">Bila rasio kotak beda dari foto
+              <select id="fit">
+                <option value="contain">Muat utuh (tanpa terpotong)</option>
+                <option value="cover">Penuhi slot (dipotong tengah)</option>
+              </select>
+            </label>
+            <label class="fl-chk">
+              <input type="checkbox" id="cap" checked /> Keterangan
+            </label>
+            <label class="fl-chk">
+              <input type="checkbox" id="num" checked /> Nomor “Gambar n.”
+            </label>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="border" /> Bingkai tipis di foto
+            </label>
+          </div>
+        </details>
+
+        <!-- Ukuran Semua Foto Section -->
+        <details>
+          <summary>Ukuran semua foto</summary>
+          <div class="fl-grid">
+            <label>Langkah ubah (cm)<input type="number" id="step" min="0.1" step="0.1" value="1" /></label>
+            <div class="fl-acts" style="align-self:end">
+              <button type="button" id="allDec" aria-label="Kecilkan semua">−</button>
+              <button type="button" id="allInc" aria-label="Besarkan semua">+</button>
+            </div>
+            <label>Lebar (cm)<input type="number" id="aw" min="0.5" step="0.1" value="4" /></label>
+            <label>Tinggi (cm)<input type="number" id="ah" min="0.5" step="0.1" value="4" /></label>
+            <label class="fl-chk fl-full">
+              <input type="checkbox" id="aforce" /> Paksa persis ukuran ini (rasio boleh berbeda)
+            </label>
+            <button type="button" id="allSet" class="fl-full">Set semua foto ke ukuran ini</button>
+          </div>
+        </details>
+
+        <!-- Kertas Section -->
+        <details>
+          <summary>Kertas</summary>
+          <div class="fl-grid">
+            <label>Ukuran
+              <select id="paper">
+                <option>A4</option>
+                <option>Letter</option>
+                <option>A5</option>
+                <option value="Custom">Kustom…</option>
+              </select>
+            </label>
+            <label>Orientasi
+              <select id="orient">
+                <option value="p">Potret</option>
+                <option value="l">Lanskap</option>
+              </select>
+            </label>
+            <label id="cwl" hidden>Lebar (mm)<input type="number" id="pwid" min="30" max="2000" value="210" /></label>
+            <label id="chl" hidden>Tinggi (mm)<input type="number" id="phei" min="30" max="2000" value="297" /></label>
+            <label>Margin (mm)<input type="number" id="margin" min="0" max="50" value="12" /></label>
+            <label>Jarak foto (mm)<input type="number" id="gap" min="0" max="30" value="6" /></label>
+          </div>
+        </details>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="fl-foot">
+        <p class="fl-hint" id="info"></p>
+        <div class="fl-acts">
+          <button type="button" class="fl-btn-pri" id="pdf">Unduh PDF</button>
+          <button type="button" id="print">Cetak</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN: Printable Canvas Preview -->
+    <main id="preview"></main>
+  </div>
+
+  <!-- INTERACTIVE CROP MODAL DIALOG -->
+  <dialog id="dlg">
+    <div class="fl-dlg-head">
+      <div class="fl-dlg-title-row">
+        <b>Edit foto</b>
+        <span class="fl-hint" id="csz"></span>
+      </div>
+      <button type="button" id="dlg-close" class="fl-dlg-x" aria-label="Tutup dialog">✕</button>
+    </div>
+    <div class="fl-chips" id="chips"></div>
+    <div class="fl-stage"><canvas id="cv"></canvas></div>
+    <p class="fl-hint" style="margin:8px 0">Geser kotak untuk memindah, tarik tepi atau sudut untuk mengubah ukuran.</p>
+    <div class="fl-sz" style="margin:8px 0 6px">
+      <input type="number" id="ew" min="0.5" step="0.1" aria-label="Lebar (cm)" /> ×
+      <input type="number" id="eh" min="0.5" step="0.1" aria-label="Tinggi (cm)" /> cm
+      <label><input type="checkbox" id="elock" /> Kunci rasio</label>
+    </div>
+    <input type="text" id="ecap" placeholder="Keterangan gambar" style="width:100%" aria-label="Keterangan" />
+    <label class="fl-sz" style="margin:6px 0 0">
+      <input type="checkbox" id="eshow" /> Tampilkan keterangan foto ini
+    </label>
+    <div class="fl-sz" style="margin:8px 0 0">
+      Urutan: <button type="button" id="eprev" aria-label="Maju satu urutan">◀</button>
+      <span id="epos" style="font-family:var(--font-mono,monospace)"></span>
+      <button type="button" id="enext" aria-label="Mundur satu urutan">▶</button>
+    </div>
+    <div class="fl-acts" style="margin-top:14px">
+      <button id="edel" type="button" style="color:#ef4444;border-color:currentColor">Hapus foto</button>
+      <button id="reset" type="button">Reset</button>
+      <button id="skip" type="button">Batal</button>
+      <button id="ok" type="button" class="fl-btn-pri">Simpan crop</button>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  .fl-workspace {
+    --fl-bg: var(--color-paper, #fafafa);
+    --fl-panel: var(--color-paper, #ffffff);
+    --fl-field: var(--color-paper, #ffffff);
+    --fl-ink: var(--color-ink, #18181b);
+    --fl-mute: var(--color-muted, #6f6f77);
+    --fl-line: var(--color-line, #e4e4e7);
+    --fl-acc: var(--color-accent, #3056d3);
+    --fl-acc-ink: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [data-theme="dark"] .fl-workspace {
+    --fl-bg: #131316;
+    --fl-panel: #18181b;
+    --fl-field: #131316;
+    --fl-ink: #ececee;
+    --fl-mute: #94949c;
+    --fl-line: #2c2c31;
+    --fl-acc: #7d9aff;
+    --fl-acc-ink: #0b0f19;
+  }
+
+  .fl-app {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    height: 760px;
+    max-height: 85vh;
+    overflow: hidden;
+    background: var(--fl-bg);
+    color: var(--fl-ink);
+  }
+
+  .fl-side {
+    background: var(--fl-panel);
+    border-right: 1px solid var(--fl-line);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .fl-top {
+    padding: 16px 20px 10px;
+  }
+  .fl-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .fl-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 0 20px 12px;
+  }
+
+  .fl-foot {
+    padding: 12px 20px;
+    border-top: 1px solid var(--fl-line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--fl-panel);
+  }
+
+  .fl-acts {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fl-acts button {
+    flex: 1;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    background: transparent;
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover {
+    border-color: var(--fl-acc);
+  }
+  button.fl-btn-pri {
+    background: var(--fl-acc);
+    color: var(--fl-acc-ink);
+    border-color: var(--fl-acc);
+    font-weight: 500;
+  }
+
+  input, select, textarea {
+    background: var(--fl-field);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 5px 8px;
+    min-width: 0;
+    font-size: 13px;
+  }
+  input[type=checkbox] {
+    accent-color: var(--fl-acc);
+    width: 15px;
+    height: 15px;
+    padding: 0;
+  }
+
+  .fl-hint {
+    color: var(--fl-mute);
+    font-size: 12px;
+    margin: 0;
+  }
+  .fl-full {
+    grid-column: 1 / -1;
+  }
+
+  .fl-drop {
+    display: block;
+    border: 1px dashed var(--fl-mute);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: border-color 0.15s ease;
+  }
+  .fl-drop input {
+    display: none;
+  }
+  .fl-drop small {
+    display: block;
+    font-weight: 400;
+    color: var(--fl-mute);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .fl-drop:hover, .fl-drop.over {
+    border-color: var(--fl-acc);
+    background: color-mix(in srgb, var(--fl-acc) 6%, transparent);
+  }
+
+  #msg {
+    color: var(--fl-mute);
+    font-size: 12px;
+    margin: 6px 0 0;
+    min-height: 1.4em;
+  }
+
+  details {
+    border-top: 1px solid var(--fl-line);
+  }
+  details:first-of-type {
+    margin-top: 8px;
+  }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::after {
+    content: "+";
+    color: var(--fl-mute);
+    font-weight: 400;
+  }
+  details[open] summary::after {
+    content: "−";
+  }
+
+  .fl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+  .fl-grid > * {
+    min-width: 0;
+  }
+  .fl-grid input:not([type=checkbox]), .fl-grid select {
+    width: 100%;
+  }
+  .fl-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--fl-mute);
+    font-size: 12px;
+  }
+  .fl-grid label.fl-chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    color: var(--fl-ink);
+    font-size: 13px;
+  }
+  .fl-grid > button {
+    padding: 6px;
+  }
+
+  .fl-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .fl-presets button, .fl-chips button {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  .fl-pset {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 14px;
+  }
+  .fl-plist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .prow {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .prow .pn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 5px 8px;
+  }
+  .prow .pn small {
+    color: var(--fl-mute);
+    font-size: 11px;
+  }
+  .prow .ic {
+    padding: 4px 6px;
+    font-size: 11px;
+    flex: none;
+  }
+  .fl-plist > .ic {
+    align-self: flex-start;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .fl-save {
+    display: grid;
+    gap: 6px;
+  }
+  .fl-save input, .fl-save select {
+    width: 100%;
+  }
+
+  #pbox {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #ptext {
+    width: 100%;
+    font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace;
+    resize: vertical;
+    background: var(--fl-field);
+    color: var(--fl-ink);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 6px;
+  }
+
+  #preview {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    overflow-y: auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+    background: color-mix(in srgb, var(--fl-line) 25%, var(--fl-bg));
+  }
+
+  /* Global styles for dynamically injected elements inside #preview to avoid Astro scoping bug */
+  :global(#preview .fl-pg) {
+    width: min(100%, 480px) !important;
+    max-width: 480px !important;
+    flex: none !important;
+    margin: 0 auto !important;
+  }
+  :global(#preview .fl-pg canvas) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 1px var(--fl-line), 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  }
+  :global(#preview .fl-lab) {
+    text-align: center !important;
+    color: var(--fl-mute) !important;
+    font-size: 12px !important;
+    font-family: var(--font-mono, monospace) !important;
+    margin-top: 6px !important;
+  }
+
+  /* Fixed Centered Dialog Styles */
+  dialog#dlg {
+    position: fixed !important;
+    inset: 0 !important;
+    margin: auto !important;
+    width: min(92vw, 420px) !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--fl-line);
+    background: var(--fl-panel);
+    color: var(--fl-ink);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    z-index: 99999;
+  }
+  dialog#dlg::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  .fl-dlg-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--fl-line);
+    padding-bottom: 8px;
+  }
+  .fl-dlg-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .fl-dlg-x {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    color: var(--fl-mute);
+    line-height: 1;
+  }
+  .fl-dlg-x:hover {
+    color: var(--fl-ink);
+  }
+
+  .fl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 8px 0;
+  }
+  .fl-chips button.on {
+    background: var(--fl-acc);
+    color: var(--fl-acc-ink);
+    border-color: var(--fl-acc);
+  }
+  .fl-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--fl-bg);
+    border: 1px solid var(--fl-line);
+    border-radius: 4px;
+    padding: 6px;
+    max-height: 250px;
+    overflow: hidden;
+  }
+  #cv {
+    touch-action: none;
+    max-width: 100%;
+    max-height: 240px;
+    height: auto;
+    width: auto;
+  }
+  .fl-sz {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+  .fl-sz input[type=number] {
+    width: 65px;
+  }
+  .fl-sz input[type=text] {
+    width: 100%;
+  }
+  .fl-sz label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+  }
+
+  @media (max-width: 860px) {
+    .fl-app {
+      grid-template-columns: minmax(0, 1fr);
+      height: auto;
+      max-height: none;
+    }
+    .fl-side {
+      border-right: 0;
+      border-bottom: 1px solid var(--fl-line);
+    }
+    #preview {
+      max-height: 70vh;
+    }
+  }
+
+  @media print {
+    :global(html), :global(body) {
+      background: #fff !important;
+      height: auto !important;
+    }
+    :global(header), :global(nav), :global(footer), :global(.share-btn), :global(.theme-toggle), :global(article > nav), :global(article > h1), :global(article > div:first-of-type), :global(article > p:first-of-type) {
+      display: none !important;
+    }
+    :global(article) {
+      max-width: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .fl-workspace {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .fl-side, :global(.fl-lab) {
+      display: none !important;
+    }
+    .fl-app {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    #preview {
+      padding: 0 !important;
+      gap: 0 !important;
+      display: block !important;
+      overflow: visible !important;
+      background: transparent !important;
+    }
+    :global(.fl-pg) {
+      width: calc(var(--pw) * 1mm) !important;
+      break-after: page !important;
+      page-break-after: always !important;
+    }
+    :global(.fl-pg:last-child) {
+      break-after: auto !important;
+      page-break-after: auto !important;
+    }
+    :global(.fl-pg canvas) {
+      box-shadow: none !important;
+    }
+  }
+</style>
+
+<script>
+  function setupFotoLaporan() {
+    const root = document.querySelector('.fl-workspace');
+    if (!root) return;
+
+    // Prevent duplicate event bindings
+    if (root.getAttribute('data-bound') === 'true') return;
+    root.setAttribute('data-bound', 'true');
+
+    const $ = (s: string) => root.querySelector(s) as HTMLElement;
+    const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+    const PAPERS: Record<string, [number, number]> = { A4: [210, 297], Letter: [216, 279], A5: [148, 210] };
+
+    const st = {
+      items: [] as any[],
+      uid: 1,
+      paper: 'A4',
+      land: false,
+      custom: { w: 210, h: 297 },
+      m: 12,
+      g: 6,
+      step: 1,
+      center: true,
+      fit: 'contain',
+      cap: true,
+      num: true,
+      border: false,
+    };
+
+    const paper = (): [number, number] => {
+      let [w, h] = st.paper === 'Custom' ? [st.custom.w, st.custom.h] : PAPERS[st.paper] || [210, 297];
+      return st.land ? [h, w] : [w, h];
+    };
+
+    /* ---------- Gambar ---------- */
+    function makeBmp(im: HTMLImageElement, f: { x: number; y: number; w: number; h: number }) {
+      const sx = f.x * im.width, sy = f.y * im.height, sw = f.w * im.width, sh = f.h * im.height;
+      const s = Math.min(1, 2400 / Math.max(sw, sh)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(sw * s));
+      c.height = Math.max(1, Math.round(sh * s));
+      c.getContext('2d')?.drawImage(im, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      return c;
+    }
+
+    function thumb(c: HTMLCanvasElement) {
+      const s = 112 / Math.max(c.width, c.height), t = document.createElement('canvas');
+      t.width = Math.max(1, Math.round(c.width * s));
+      t.height = Math.max(1, Math.round(c.height * s));
+      t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
+      return t.toDataURL('image/jpeg', 0.7);
+    }
+
+    const loadImg = (f: File): Promise<HTMLImageElement | null> =>
+      new Promise((res) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        im.src = URL.createObjectURL(f);
+      });
+
+    const fitBox = (a: number, W: number, H: number): [number, number] => (a >= W / H ? [W, W / a] : [H * a, H]);
+
+    function scaleItem(it: any, d: number) {
+      const w = Math.max(0.5, it.w + d);
+      it.h = (it.h * w) / it.w;
+      it.w = w;
+    }
+
+    async function addFiles(files: FileList | File[]) {
+      const list = [...files].filter((f) => f.type.startsWith('image/'));
+      let bad = 0;
+      for (const f of list) {
+        const im = await loadImg(f);
+        if (!im) {
+          bad++;
+          continue;
+        }
+        const rect = { x: 0, y: 0, w: 1, h: 1 }, bmp = makeBmp(im, rect);
+        const [w, h] = fitBox(bmp.width / bmp.height, 8, 8);
+        st.items.push({ id: st.uid++, src: im, rect, bmp, thumb: thumb(bmp), cap: '', w, h, lock: true, showCap: true });
+      }
+      const msg = $('#msg');
+      if (msg) {
+        msg.textContent = !list.length
+          ? 'File harus berupa gambar.'
+          : bad
+            ? `${bad} file tidak bisa dibuka (coba JPG atau PNG).`
+            : '';
+      }
+      schedule();
+    }
+
+    const fileEl = $('#file') as HTMLInputElement;
+    fileEl?.addEventListener('change', (e: any) => {
+      addFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    const drop = $('#drop');
+    if (drop) {
+      ['dragenter', 'dragover'].forEach((t) =>
+        drop.addEventListener(t, (e: any) => {
+          e.preventDefault();
+          drop.classList.add('over');
+        })
+      );
+      ['dragleave', 'drop'].forEach((t) =>
+        drop.addEventListener(t, (e: any) => {
+          e.preventDefault();
+          drop.classList.remove('over');
+        })
+      );
+      drop.addEventListener('drop', (e: any) => addFiles(e.dataTransfer.files));
+    }
+
+    /* ---------- Crop ---------- */
+    const dlg = $('#dlg') as HTMLDialogElement;
+    const cv = $('#cv') as HTMLCanvasElement;
+    const VP = 280, MIN = 24;
+    const RATIOS: [string, number][] = [
+      ['Bebas', 0],
+      ['1:1', 1],
+      ['4:3', 4 / 3],
+      ['3:2', 3 / 2],
+      ['16:9', 16 / 9],
+      ['3:4', 3 / 4],
+      ['2:3', 2 / 3],
+    ];
+    let cr: any = null, drag: any = null;
+
+    function openCrop(it: any): Promise<any> {
+      return new Promise((res) => {
+        const im = it.src, sc = Math.min(VP / im.width, VP / im.height), W = Math.round(im.width * sc), H = Math.round(im.height * sc), f = it.rect;
+        cr = { im, sc, W, H, ratio: 0, res, r: { x: f.x * W, y: f.y * H, w: f.w * W, h: f.h * H } };
+        ($('#ew') as HTMLInputElement).value = String(+it.w.toFixed(2));
+        ($('#eh') as HTMLInputElement).value = String(+it.h.toFixed(2));
+        ($('#elock') as HTMLInputElement).checked = it.lock;
+        ($('#ecap') as HTMLInputElement).value = it.cap;
+        ($('#eshow') as HTMLInputElement).checked = it.showCap;
+        cr.pos = st.items.indexOf(it);
+        showPos();
+        renderChips();
+        dlg.showModal();
+        cdraw();
+      });
+    }
+
+    function renderChips() {
+      const chips = $('#chips');
+      if (chips) {
+        chips.innerHTML = RATIOS.map(
+          ([n, v]) => `<button type="button" data-v="${v}" class="${cr && cr.ratio === v ? 'on' : ''}">${n}</button>`
+        ).join('');
+      }
+    }
+
+    function cfinish(v: any) {
+      if (dlg && dlg.open) {
+        try { dlg.close(); } catch (_) {}
+      }
+      if (cr) {
+        const r = cr.res;
+        cr = null;
+        if (r) r(v);
+      }
+    }
+
+    // Close handlers
+    dlg?.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      cfinish(null);
+    });
+
+    // Close on backdrop click
+    dlg?.addEventListener('click', (e) => {
+      const rect = dlg.getBoundingClientRect();
+      const inBox = (
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width
+      );
+      if (!inBox) cfinish(null);
+    });
+
+    const dlgX = $('#dlg-close');
+    if (dlgX) dlgX.onclick = () => cfinish(null);
+
+    const skipBtn = $('#skip');
+    if (skipBtn) skipBtn.onclick = () => cfinish(null);
+
+    const resetBtn = $('#reset');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        if (!cr) return;
+        cr.r = { x: 0, y: 0, w: cr.W, h: cr.H };
+        cr.ratio = 0;
+        renderChips();
+        cdraw();
+      };
+    }
+
+    const showPos = () => {
+      const epos = $('#epos');
+      if (epos && cr) epos.textContent = `${cr.pos + 1} dari ${st.items.length}`;
+    };
+
+    const eprev = $('#eprev');
+    if (eprev) {
+      eprev.onclick = () => {
+        if (cr) {
+          cr.pos = Math.max(0, cr.pos - 1);
+          showPos();
+        }
+      };
+    }
+
+    const enext = $('#enext');
+    if (enext) {
+      enext.onclick = () => {
+        if (cr) {
+          cr.pos = Math.min(st.items.length - 1, cr.pos + 1);
+          showPos();
+        }
+      };
+    }
+
+    function syncSize(k: 'w' | 'h') {
+      const elock = $('#elock') as HTMLInputElement;
+      if (!cr || !elock.checked) return;
+      const a = cr.r.w / cr.r.h;
+      const ew = $('#ew') as HTMLInputElement;
+      const eh = $('#eh') as HTMLInputElement;
+      if (k === 'w') eh.value = String(+(+ew.value / a).toFixed(2));
+      else ew.value = String(+(+eh.value * a).toFixed(2));
+    }
+
+    $('#ew')?.addEventListener('input', () => syncSize('w'));
+    $('#eh')?.addEventListener('input', () => syncSize('h'));
+    $('#elock')?.addEventListener('change', () => syncSize('w'));
+
+    const edel = $('#edel');
+    if (edel) edel.onclick = () => cfinish({ del: true });
+
+    const okBtn = $('#ok');
+    if (okBtn) {
+      okBtn.onclick = () => {
+        if (!cr) return;
+        const { r, W, H } = cr;
+        const lock = ($('#elock') as HTMLInputElement).checked;
+        const ew = $('#ew') as HTMLInputElement;
+        const eh = $('#eh') as HTMLInputElement;
+        const w = Math.max(0.5, +ew.value || 0.5);
+        const h = lock ? (w * r.h) / r.w : Math.max(0.5, +eh.value || 0.5);
+        cfinish({
+          rect: { x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H },
+          w,
+          h,
+          lock,
+          cap: ($('#ecap') as HTMLInputElement).value,
+          showCap: ($('#eshow') as HTMLInputElement).checked,
+          pos: cr.pos,
+        });
+      };
+    }
+
+    $('#chips')?.addEventListener('click', (e: any) => {
+      const b = e.target.closest('button');
+      if (!b || !cr) return;
+      const v = +b.dataset.v, r = cr.r;
+      cr.ratio = v;
+      if (v) {
+        const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+        let w = r.w, h = r.h;
+        if (w / h > v) w = h * v;
+        else h = w / v;
+        cr.r = { x: clamp(cx - w / 2, 0, cr.W - w), y: clamp(cy - h / 2, 0, cr.H - h), w, h };
+      }
+      renderChips();
+      cdraw();
+    });
+
+    function cdraw() {
+      if (!cr) return;
+      const { W, H, r, im } = cr;
+      cv.width = W;
+      cv.height = H;
+      const c = cv.getContext('2d')!;
+      c.drawImage(im, 0, 0, W, H);
+      c.fillStyle = 'rgba(0,0,0,.55)';
+      c.fillRect(0, 0, W, r.y);
+      c.fillRect(0, r.y + r.h, W, H - r.y - r.h);
+      c.fillRect(0, r.y, r.x, r.h);
+      c.fillRect(r.x + r.w, r.y, W - r.x - r.w, r.h);
+      c.strokeStyle = '#fff';
+      c.lineWidth = 2;
+      c.strokeRect(r.x, r.y, r.w, r.h);
+      c.fillStyle = '#fff';
+      for (const px of [r.x, r.x + r.w / 2, r.x + r.w]) {
+        for (const py of [r.y, r.y + r.h / 2, r.y + r.h]) {
+          if (px !== r.x + r.w / 2 || py !== r.y + r.h / 2) c.fillRect(px - 4, py - 4, 8, 8);
+        }
+      }
+      const csz = $('#csz');
+      if (csz) csz.textContent = `${Math.round(r.w / cr.sc)} × ${Math.round(r.h / cr.sc)} px`;
+      const elock = $('#elock') as HTMLInputElement;
+      if (elock?.checked) {
+        const ew = $('#ew') as HTMLInputElement;
+        const eh = $('#eh') as HTMLInputElement;
+        eh.value = String(+(+ew.value * r.h / r.w).toFixed(2));
+      }
+    }
+
+    const cpos = (e: PointerEvent): [number, number] => {
+      const b = cv.getBoundingClientRect();
+      return [((e.clientX - b.left) * cr.W) / b.width, ((e.clientY - b.top) * cr.H) / b.height];
+    };
+
+    cv?.addEventListener('pointerdown', (e: any) => {
+      if (!cr) return;
+      const [px, py] = cpos(e), r = cr.r, T = 14;
+      const near = (a: number, b: number) => Math.abs(a - b) < T;
+      const inX = px >= r.x - T && px <= r.x + r.w + T, inY = py >= r.y - T && py <= r.y + r.h + T;
+      const f = {
+        l: inY && near(px, r.x),
+        r: inY && near(px, r.x + r.w) && !near(px, r.x),
+        t: inX && near(py, r.y),
+        b: inX && near(py, r.y + r.h) && !near(py, r.y),
+      };
+      const edge = f.l || f.r || f.t || f.b;
+      if (!edge && !(px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h)) return;
+      drag = { px, py, r0: { ...r }, f, move: !edge };
+      cv.setPointerCapture(e.pointerId);
+    });
+
+    cv?.addEventListener('pointermove', (e: any) => {
+      if (!drag || !cr) return;
+      const [px, py] = cpos(e), dx = px - drag.px, dy = py - drag.py;
+      const { W, H } = cr, o = drag.r0, f = drag.f;
+      if (drag.move) {
+        cr.r = { ...o, x: clamp(o.x + dx, 0, W - o.w), y: clamp(o.y + dy, 0, H - o.h) };
+        return cdraw();
+      }
+      let x = o.x, y = o.y, x2 = o.x + o.w, y2 = o.y + o.h;
+      if (f.l) x = clamp(x + dx, 0, x2 - MIN);
+      if (f.r) x2 = clamp(x2 + dx, x + MIN, W);
+      if (f.t) y = clamp(y + dy, 0, y2 - MIN);
+      if (f.b) y2 = clamp(y2 + dy, y + MIN, H);
+      let w = x2 - x, h = y2 - y;
+      if (cr.ratio) {
+        const q = cr.ratio;
+        if (f.l || f.r) {
+          h = w / q;
+          if (f.t) y = y2 - h;
+          else if (!f.b) y = o.y + (o.h - h) / 2;
+        } else {
+          w = h * q;
+          x = o.x + (o.w - w) / 2;
+        }
+        if (x < 0 || y < 0 || x + w > W + 0.5 || y + h > H + 0.5) return;
+      }
+      cr.r = { x, y, w, h };
+      cdraw();
+    });
+
+    cv?.addEventListener('pointerup', () => {
+      drag = null;
+    });
+
+    /* ---------- Tata Letak & Gambar Halaman ---------- */
+    function wrap(c: CanvasRenderingContext2D, text: string, maxW: number) {
+      const out: string[] = [];
+      let line = '';
+      for (const w of text.split(/\s+/)) {
+        const t = line ? line + ' ' + w : w;
+        if (c.measureText(t).width > maxW && line) {
+          out.push(line);
+          line = w;
+        } else line = t;
+      }
+      if (line) out.push(line);
+      return out;
+    }
+
+    const FS = 3.5, LH = FS * 1.3, CAPW = 28;
+    const mctx = document.createElement('canvas').getContext('2d')!;
+    const capText = (it: any, no: number) =>
+      st.cap && it.showCap ? ((st.num ? `Gambar ${no}. ` : '') + it.cap).trim() : '';
+
+    function makeCell(it: any, no: number, s: number) {
+      const w = it.w * 10 * s, h = it.h * 10 * s, txt = capText(it, no), cw = txt ? Math.max(w, CAPW) : w;
+      mctx.font = `${FS * 10}px Arial,Helvetica,sans-serif`;
+      const lines = txt ? wrap(mctx, txt, cw * 10).slice(0, 3) : [];
+      const capH = lines.length ? 1.5 + lines.length * LH : 0;
+      return { it, no, w, h, cw, lines, capH, ch: h + capH };
+    }
+
+    function layout() {
+      const [pw, ph] = paper(), { m, g } = st, CW = pw - 2 * m, CH = ph - 2 * m;
+      const cells = st.items.map((it, i) => {
+        const c = makeCell(it, i + 1, 1), s = Math.min(1, CW / c.cw, (CH - c.capH) / c.h);
+        return s < 1 ? makeCell(it, i + 1, s) : c;
+      });
+      const rows: any[] = [];
+      let cur: any = { cells: [], w: 0, h: 0 };
+      for (const c of cells) {
+        if (cur.cells.length && cur.w + g + c.cw > CW + 0.01) {
+          rows.push(cur);
+          cur = { cells: [], w: 0, h: 0 };
+        }
+        cur.w += (cur.cells.length ? g : 0) + c.cw;
+        cur.h = Math.max(cur.h, c.ch);
+        cur.cells.push(c);
+      }
+      if (cur.cells.length) rows.push(cur);
+      const pages: any[] = [];
+      let page: any = null, y = m;
+      for (const r of rows) {
+        if (!page || (y > m && y + r.h > ph - m + 0.01)) {
+          page = [];
+          pages.push(page);
+          y = m;
+        }
+        let x = m + (st.center ? (CW - r.w) / 2 : 0);
+        for (const c of r.cells) {
+          page.push({ ...c, x, y, bx: x + (c.cw - c.w) / 2, by: y });
+          x += c.cw + g;
+        }
+        y += r.h + g;
+      }
+      return { pw, ph, pages };
+    }
+
+    function paintCell(c: CanvasRenderingContext2D, k: number, p: any) {
+      const im = p.it.bmp, iw = im.width, ih = im.height;
+      let dx = p.bx, dy = p.by, dw = p.w, dh = p.h;
+      if (st.fit === 'cover') {
+        const s = Math.max(p.w / iw, p.h / ih), sw = p.w / s, sh = p.h / s;
+        c.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, dx * k, dy * k, dw * k, dh * k);
+      } else {
+        const s = Math.min(p.w / iw, p.h / ih);
+        dw = iw * s;
+        dh = ih * s;
+        dx += (p.w - dw) / 2;
+        dy += (p.h - dh) / 2;
+        c.drawImage(im, dx * k, dy * k, dw * k, dh * k);
+      }
+      if (st.border) {
+        c.strokeStyle = '#222';
+        c.lineWidth = 0.25 * k;
+        c.strokeRect(dx * k, dy * k, dw * k, dh * k);
+      }
+      c.fillStyle = '#111';
+      c.font = `${FS * k}px Arial,Helvetica,sans-serif`;
+      c.textAlign = 'center';
+      c.textBaseline = 'top';
+      p.lines.forEach((l: string, i: number) => c.fillText(l, (p.x + p.cw / 2) * k, (p.by + p.h + 1.5 + i * LH) * k));
+    }
+
+    function paintPage(cvEl: HTMLCanvasElement, list: any[], pw: number, ph: number, dpi: number) {
+      const k = dpi / 25.4;
+      cvEl.width = Math.round(pw * k);
+      cvEl.height = Math.round(ph * k);
+      const c = cvEl.getContext('2d')!;
+      c.fillStyle = '#fff';
+      c.fillRect(0, 0, cvEl.width, cvEl.height);
+      if (!list.length) {
+        c.fillStyle = '#8a96a3';
+        c.font = `${4.5 * k}px Arial,sans-serif`;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.fillText('Belum ada foto. Unggah foto di panel kiri.', cvEl.width / 2, cvEl.height / 2);
+        return;
+      }
+      list.forEach((p) => paintCell(c, k, p));
+    }
+
+    let lastL: any = null;
+    async function editItem(it: any) {
+      const r = await openCrop(it);
+      if (!r) return;
+      if (r.del) st.items = st.items.filter((x) => x !== it);
+      else {
+        it.rect = r.rect;
+        it.bmp = makeBmp(it.src, r.rect);
+        it.thumb = thumb(it.bmp);
+        it.w = r.w;
+        it.h = r.h;
+        it.lock = r.lock;
+        it.cap = r.cap;
+        it.showCap = r.showCap;
+        st.items.splice(st.items.indexOf(it), 1);
+        st.items.splice(r.pos, 0, it);
+      }
+      schedule();
+    }
+
+    function pickAt(ev: MouseEvent, pi: number) {
+      if (!lastL) return;
+      const cvEl = ev.currentTarget as HTMLCanvasElement;
+      const b = cvEl.getBoundingClientRect();
+      const x = ((ev.clientX - b.left) / b.width) * lastL.pw;
+      const y = ((ev.clientY - b.top) / b.height) * lastL.ph;
+      const p = (lastL.pages[pi] || []).find((p: any) => x >= p.x && x <= p.x + p.cw && y >= p.y && y <= p.y + p.ch);
+      if (p) editItem(p.it);
+    }
+
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(renderPages);
+    };
+
+    function renderPages() {
+      const L = layout();
+      const box = $('#preview');
+      if (!box) return;
+      const arr = L.pages.length ? L.pages : [[]];
+      const top = box.scrollTop;
+      lastL = L;
+      const pgStyle = document.getElementById('pg');
+      if (pgStyle) pgStyle.textContent = `@page{size:${L.pw}mm ${L.ph}mm;margin:0}`;
+      box.style.setProperty('--pw', String(L.pw));
+
+      // Inject HTML with inline styles to ensure canvas never overflows before or after Astro compilation
+      box.innerHTML = arr
+        .map(
+          (_, i) =>
+            `<div class="fl-pg" style="width:min(100%,480px);max-width:480px;flex:none;margin:0 auto">` +
+            `<canvas style="display:block;width:100%;max-width:100%;height:auto;background:#fff"></canvas>` +
+            `<div class="fl-lab" style="text-align:center;font-size:12px;margin-top:6px">Halaman ${i + 1} dari ${arr.length}</div>` +
+            `</div>`
+        )
+        .join('');
+
+      box.querySelectorAll('canvas').forEach((cvEl, i) => {
+        paintPage(cvEl, arr[i], L.pw, L.ph, 150);
+        if (L.pages.length) {
+          cvEl.style.cursor = 'pointer';
+          cvEl.title = 'Klik foto untuk mengedit';
+          cvEl.onclick = (ev) => pickAt(ev, i);
+        }
+      });
+      box.scrollTop = top;
+      const info = $('#info');
+      if (info) info.textContent = st.items.length ? `${st.items.length} foto di ${L.pages.length} halaman.` : '';
+    }
+
+    /* ---------- Pengaturan ---------- */
+    const presetsEl = $('#presets');
+    if (presetsEl) {
+      presetsEl.innerHTML = [1, 2, 3, 4].map((n) => `<button type="button" data-n="${n}">${n} kolom</button>`).join('');
+      presetsEl.addEventListener('click', (e: any) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        setCols(+b.dataset.n);
+        schedule();
+      });
+    }
+
+    const bind = (id: string, fn: (t: any) => void) =>
+      $('#' + id)?.addEventListener('input', (e: any) => {
+        fn(e.target);
+        schedule();
+      });
+
+    bind('center', (t) => (st.center = t.checked));
+    $('#step')?.addEventListener('input', (e: any) => {
+      st.step = Math.max(0.1, +e.target.value || 1);
+    });
+
+    const allDec = $('#allDec');
+    if (allDec) {
+      allDec.onclick = () => {
+        st.items.forEach((it) => scaleItem(it, -st.step));
+        schedule();
+      };
+    }
+
+    const allInc = $('#allInc');
+    if (allInc) {
+      allInc.onclick = () => {
+        st.items.forEach((it) => scaleItem(it, st.step));
+        schedule();
+      };
+    }
+
+    const allSet = $('#allSet');
+    if (allSet) {
+      allSet.onclick = () => {
+        const aw = $('#aw') as HTMLInputElement;
+        const ah = $('#ah') as HTMLInputElement;
+        const aforce = $('#aforce') as HTMLInputElement;
+        setBox(Math.max(0.5, +aw.value || 4), Math.max(0.5, +ah.value || 4), aforce.checked);
+        schedule();
+      };
+    }
+
+    bind('fit', (t) => (st.fit = t.value));
+    bind('cap', (t) => (st.cap = t.checked));
+    bind('num', (t) => (st.num = t.checked));
+    bind('border', (t) => (st.border = t.checked));
+    bind('margin', (t) => (st.m = clamp(+t.value || 0, 0, 50)));
+    bind('gap', (t) => (st.g = clamp(+t.value || 0, 0, 30)));
+    bind('orient', (t) => (st.land = t.value === 'l'));
+    bind('paper', (t) => {
+      st.paper = t.value;
+      const cwl = $('#cwl');
+      const chl = $('#chl');
+      if (cwl && chl) cwl.hidden = chl.hidden = st.paper !== 'Custom';
+    });
+    bind('pwid', (t) => {
+      const v = +t.value;
+      if (v >= 30 && v <= 2000) st.custom.w = v;
+    });
+    bind('phei', (t) => {
+      const v = +t.value;
+      if (v >= 30 && v <= 2000) st.custom.h = v;
+    });
+
+    /* ---------- Preset ---------- */
+    function setCols(n: number) {
+      const [pw] = paper(), W = Math.max(0.5, (pw - 2 * st.m - (n - 1) * st.g) / n / 10 - 0.01);
+      for (const it of st.items) {
+        it.w = W;
+        it.h = (W * it.bmp.height) / it.bmp.width;
+        it.lock = true;
+      }
+    }
+
+    function setBox(W: number, H: number, force: boolean) {
+      for (const it of st.items) {
+        if (force) {
+          it.w = W;
+          it.h = H;
+          it.lock = false;
+        } else {
+          [it.w, it.h] = fitBox(it.bmp.width / it.bmp.height, W, H);
+          it.lock = true;
+        }
+      }
+    }
+
+    const PKEY = 'fotolaporan.presets';
+    const BASE = {
+      paper: 'A4',
+      land: false,
+      custom: { w: 210, h: 297 },
+      m: 12,
+      g: 6,
+      fit: 'contain',
+      cap: true,
+      num: true,
+      border: false,
+      center: true,
+    };
+
+    const say = (t: string) => {
+      const pmsg = $('#pmsg');
+      if (pmsg) pmsg.textContent = t;
+    };
+    const fmtN = (n: number) => String(+(+n).toFixed(2));
+    const esc = (t: string) =>
+      String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c));
+    const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preset';
+    const nv = (v: any, a: number, z: number, d: number) => {
+      const n = parseFloat(v);
+      return clamp(Number.isFinite(n) ? n : d, a, z);
+    };
+
+    function cleanSettings(x: any) {
+      x = x || {};
+      return {
+        paper: ['A4', 'Letter', 'A5', 'Custom'].includes(x.paper) ? x.paper : BASE.paper,
+        land: !!x.land,
+        custom: { w: nv(x.custom && x.custom.w, 30, 2000, 210), h: nv(x.custom && x.custom.h, 30, 2000, 297) },
+        m: nv(x.m, 0, 50, BASE.m),
+        g: nv(x.g, 0, 30, BASE.g),
+        fit: x.fit === 'cover' ? 'cover' : 'contain',
+        cap: x.cap !== false,
+        num: x.num !== false,
+        border: !!x.border,
+        center: x.center !== false,
+      };
+    }
+
+    function cleanSize(z: any) {
+      if (z && z.t === 'cols') return { t: 'cols', n: Math.floor(nv(z.n, 1, 6, 2)) };
+      if (z && z.t === 'box') return { t: 'box', w: nv(z.w, 0.5, 100, 4), h: nv(z.h, 0.5, 100, 4), force: !!z.force };
+      return { t: 'none' };
+    }
+
+    const cleanPreset = (q: any) =>
+      q && typeof q.name === 'string' && q.name.trim()
+        ? { name: q.name.trim().slice(0, 60), s: cleanSettings(q.s), size: cleanSize(q.size) }
+        : null;
+
+    let userPresets: any[] = [];
+    try {
+      const stored = localStorage.getItem(PKEY);
+      if (stored) userPresets = JSON.parse(stored);
+    } catch (_) {}
+
+    const persist = () => {
+      try {
+        localStorage.setItem(PKEY, JSON.stringify(userPresets));
+      } catch (_) {
+        say('Preset tidak bisa disimpan di browser ini. Gunakan Ekspor.');
+      }
+    };
+
+    function syncUI() {
+      ($('#paper') as HTMLSelectElement).value = st.paper;
+      ($('#orient') as HTMLSelectElement).value = st.land ? 'l' : 'p';
+      ($('#pwid') as HTMLInputElement).value = String(st.custom.w);
+      ($('#phei') as HTMLInputElement).value = String(st.custom.h);
+      const cwl = $('#cwl');
+      const chl = $('#chl');
+      if (cwl && chl) cwl.hidden = chl.hidden = st.paper !== 'Custom';
+      ($('#margin') as HTMLInputElement).value = String(st.m);
+      ($('#gap') as HTMLInputElement).value = String(st.g);
+      ($('#fit') as HTMLSelectElement).value = st.fit;
+      ($('#cap') as HTMLInputElement).checked = st.cap;
+      ($('#num') as HTMLInputElement).checked = st.num;
+      ($('#border') as HTMLInputElement).checked = st.border;
+      ($('#center') as HTMLInputElement).checked = st.center;
+    }
+
+    function applyPreset(q: any) {
+      Object.assign(st, q.s, { custom: { ...q.s.custom } });
+      syncUI();
+      if (q.size.t === 'cols') setCols(q.size.n);
+      else if (q.size.t === 'box') {
+        setBox(q.size.w, q.size.h, q.size.force);
+        ($('#aw') as HTMLInputElement).value = q.size.w;
+        ($('#ah') as HTMLInputElement).value = q.size.h;
+        ($('#aforce') as HTMLInputElement).checked = q.size.force;
+      }
+      schedule();
+    }
+
+    function presetRow(q: any, i: number) {
+      const dim = q.s.paper === 'Custom' ? `${fmtN(q.s.custom.w)}×${fmtN(q.s.custom.h)} mm` : q.s.paper;
+      const sz =
+        q.size.t === 'cols'
+          ? `${q.size.n} kolom`
+          : q.size.t === 'box'
+            ? `${fmtN(q.size.w)}×${fmtN(q.size.h)} cm`
+            : 'ukuran foto tetap';
+      return (
+        `<div class="prow"><button type="button" class="pn" data-a="apply" data-i="${i}"><span>${esc(q.name)}</span><small>${dim} ${q.s.land ? 'lanskap' : 'potret'}, ${sz}</small></button>` +
+        `<button type="button" class="ic" data-a="export" data-i="${i}">Ekspor</button><button type="button" class="ic" data-a="del" data-i="${i}">Hapus</button></div>`
+      );
+    }
+
+    function renderPresets() {
+      const plist = $('#plist');
+      if (plist) {
+        plist.innerHTML = userPresets.length
+          ? userPresets.map(presetRow).join('')
+          : `<p class="fl-hint">Belum ada preset. Atur pengaturan lalu simpan di bawah, atau impor dari file.</p>`;
+      }
+    }
+
+    async function saveBlob(name: string, blob: Blob) {
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return 'anchor';
+    }
+
+    function showText(t: string) {
+      const ptext = $('#ptext') as HTMLTextAreaElement;
+      if (ptext) ptext.value = t;
+      const pbox = $('#pbox');
+      if (pbox) pbox.hidden = false;
+    }
+
+    async function exportPresets(list: any[], filename: string) {
+      const text = JSON.stringify({ format: 'foto-laporan-preset', version: 1, presets: list }, null, 2);
+      try {
+        await saveBlob(filename, new Blob([text], { type: 'application/json' }));
+        say('File preset diunduh. Kalau tidak muncul, salin teks di bawah dan simpan sendiri.');
+        showText(text);
+      } catch (err: any) {
+        if (err && err.code === 'declined') return;
+        say('File tidak bisa diunduh di tampilan ini. Salin teks di bawah dan simpan sendiri.');
+        showText(text);
+      }
+    }
+
+    let lastDel: any = null;
+    $('#plist')?.addEventListener('click', (e: any) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      const i = +b.dataset.i, a = b.dataset.a, q = userPresets[i];
+      if (!q) return;
+      if (a === 'apply') {
+        applyPreset(q);
+        say(`Preset “${q.name}” diterapkan.`);
+      } else if (a === 'export') {
+        exportPresets([q], `preset-${slug(q.name)}.json`);
+      } else if (a === 'del') {
+        userPresets.splice(i, 1);
+        lastDel = { q, i };
+        persist();
+        renderPresets();
+        const pmsg = $('#pmsg');
+        if (pmsg) pmsg.innerHTML = `Preset “${esc(q.name)}” dihapus. <button type="button" class="ic" data-a="undo">Urungkan</button>`;
+      }
+    });
+
+    $('#pmsg')?.addEventListener('click', (e: any) => {
+      if (!e.target.closest('[data-a="undo"]') || !lastDel) return;
+      userPresets.splice(Math.min(lastDel.i, userPresets.length), 0, lastDel.q);
+      lastDel = null;
+      persist();
+      renderPresets();
+      say('Preset dikembalikan.');
+    });
+
+    const psave = $('#psave');
+    if (psave) {
+      psave.onclick = () => {
+        const pname = $('#pname') as HTMLInputElement;
+        const name = pname?.value.trim();
+        if (!name) {
+          say('Isi nama preset dulu.');
+          return;
+        }
+        const psize = $('#psize') as HTMLSelectElement;
+        const z = psize.value;
+        const aw = $('#aw') as HTMLInputElement;
+        const ah = $('#ah') as HTMLInputElement;
+        const aforce = $('#aforce') as HTMLInputElement;
+        const size =
+          z[0] === 'c'
+            ? { t: 'cols', n: +z.slice(1) }
+            : z === 'box'
+              ? { t: 'box', w: +aw.value || 4, h: +ah.value || 4, force: aforce.checked }
+              : { t: 'none' };
+        const q = cleanPreset({ name, s: st, size });
+        if (!q) return;
+        const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
+        if (k >= 0) userPresets[k] = q;
+        else if (userPresets.length < 100) userPresets.push(q);
+        else {
+          say('Jumlah preset sudah penuh (100).');
+          return;
+        }
+        persist();
+        pname.value = '';
+        renderPresets();
+        say(k >= 0 ? `Preset “${q.name}” diperbarui.` : `Preset “${q.name}” disimpan.`);
+      };
+    }
+
+    const pexp = $('#pexp');
+    if (pexp) {
+      pexp.onclick = () => {
+        if (!userPresets.length) {
+          say('Belum ada preset sendiri untuk diekspor.');
+          return;
+        }
+        exportPresets(userPresets, 'preset-foto-laporan.json');
+      };
+    }
+
+    const pimp = $('#pimp');
+    if (pimp) pimp.onclick = () => ($('#pfile') as HTMLInputElement)?.click();
+
+    function importText(text: string) {
+      try {
+        const j = JSON.parse(text);
+        const arr = Array.isArray(j) ? j : Array.isArray(j.presets) ? j.presets : [j];
+        const ok = arr.map(cleanPreset).filter(Boolean).slice(0, 50);
+        if (!ok.length) throw 0;
+        for (const q of ok) {
+          const k = userPresets.findIndex((x) => x.name.toLowerCase() === q.name.toLowerCase());
+          if (k >= 0) userPresets[k] = q;
+          else if (userPresets.length < 100) userPresets.push(q);
+        }
+        persist();
+        renderPresets();
+        say(`${ok.length} preset diimpor.`);
+      } catch (_) {
+        say('Teks atau file bukan preset yang valid.');
+      }
+    }
+
+    $('#pfile')?.addEventListener('change', async (e: any) => {
+      const f = e.target.files[0];
+      e.target.value = '';
+      if (!f) return;
+      if (f.size > 1e6) {
+        say('File terlalu besar untuk preset.');
+        return;
+      }
+      importText(await f.text());
+    });
+
+    const ptoggle = $('#ptoggle');
+    if (ptoggle) {
+      ptoggle.onclick = () => {
+        const box = $('#pbox');
+        if (box) {
+          box.hidden = !box.hidden;
+          if (!box.hidden) ($('#ptext') as HTMLTextAreaElement)?.focus();
+        }
+      };
+    }
+
+    const pclose = $('#pclose');
+    if (pclose) pclose.onclick = () => { const box = $('#pbox'); if (box) box.hidden = true; };
+
+    const ptextimp = $('#ptextimp');
+    if (ptextimp) {
+      ptextimp.onclick = () => {
+        const v = ($('#ptext') as HTMLTextAreaElement)?.value.trim();
+        if (!v) {
+          say('Tempel teks preset dulu.');
+          return;
+        }
+        importText(v);
+      };
+    }
+
+    const pcopy = $('#pcopy');
+    if (pcopy) {
+      pcopy.onclick = async () => {
+        const t = $('#ptext') as HTMLTextAreaElement;
+        if (!t || !t.value) {
+          say('Belum ada teks untuk disalin.');
+          return;
+        }
+        t.select();
+        try {
+          await navigator.clipboard.writeText(t.value);
+          say('Teks disalin.');
+        } catch (_) {
+          try {
+            document.execCommand('copy');
+            say('Teks disalin.');
+          } catch (__) {
+            say('Tekan Ctrl+C untuk menyalin teks yang terpilih.');
+          }
+        }
+      };
+    }
+
+    renderPresets();
+
+    /* ---------- PDF & Cetak ---------- */
+    async function buildPDF(): Promise<Blob> {
+      const [pw, ph] = paper(), f = (v: number) => ((v * 72) / 25.4).toFixed(2), imgs: any[] = [];
+      for (const p of layout().pages) {
+        const c = document.createElement('canvas');
+        paintPage(c, p, pw, ph, 200);
+        const b = await new Promise<Blob>((r) => c.toBlob(r as any, 'image/jpeg', 0.92));
+        imgs.push({ bytes: new Uint8Array(await b.arrayBuffer()), w: c.width, h: c.height });
+      }
+      const enc = new TextEncoder(), parts: any[] = [], offs: number[] = [];
+      let len = 0;
+      const put = (b: any) => {
+        if (typeof b === 'string') b = enc.encode(b);
+        parts.push(b);
+        len += b.length;
+      };
+      const obj = (i: number, s: string) => {
+        offs[i] = len;
+        put(`${i} 0 obj\n${s}\nendobj\n`);
+      };
+      const total = 3 + imgs.length * 3;
+      put('%PDF-1.4\n');
+      obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+      obj(2, `<< /Type /Pages /Kids [${imgs.map((_, i) => 4 + 3 * i + ' 0 R').join(' ')}] /Count ${imgs.length} >>`);
+      imgs.forEach((im, i) => {
+        const a = 3 + 3 * i;
+        offs[a] = len;
+        put(`${a} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);
+        put(im.bytes);
+        put('\nendstream\nendobj\n');
+        obj(a + 1, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(pw)} ${f(ph)}] /Resources << /XObject << /Im ${a} 0 R >> >> /Contents ${a + 2} 0 R >>`);
+        const c = `q ${f(pw)} 0 0 ${f(ph)} 0 0 cm /Im Do Q`;
+        obj(a + 2, `<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
+      });
+      const xr = len;
+      let x = `xref\n0 ${total}\n0000000000 65535 f \n`;
+      for (let i = 1; i < total; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+      put(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+      return new Blob(parts, { type: 'application/pdf' });
+    }
+
+    const printBtn = $('#print');
+    if (printBtn) {
+      printBtn.onclick = () => {
+        if (!st.items.length) {
+          const msg = $('#msg');
+          if (msg) msg.textContent = 'Tambahkan foto dulu.';
+          return;
+        }
+        const msg = $('#msg');
+        if (msg) msg.textContent = '';
+        try {
+          window.print();
+        } catch (_) {
+          if (msg) msg.textContent = 'Cetak tidak tersedia di tampilan ini. Gunakan Unduh PDF.';
+        }
+      };
+    }
+
+    const pdfBtn = $('#pdf');
+    if (pdfBtn) {
+      pdfBtn.onclick = async () => {
+        const msg = $('#msg');
+        if (!st.items.length) {
+          if (msg) msg.textContent = 'Tambahkan foto dulu.';
+          return;
+        }
+        if (msg) msg.textContent = 'Menyiapkan PDF…';
+        try {
+          await saveBlob('foto-laporan.pdf', await buildPDF());
+          if (msg) msg.textContent = 'PDF diunduh. Kalau tidak muncul, pakai Cetak lalu Simpan sebagai PDF.';
+        } catch (err: any) {
+          if (msg) msg.textContent = err && err.code === 'declined' ? '' : 'PDF gagal disimpan. Coba tombol Cetak.';
+        }
+      };
+    }
+
+    renderPages();
+  }
+
+  setupFotoLaporan();
+  document.addEventListener('astro:page-load', setupFotoLaporan);
+</script>
