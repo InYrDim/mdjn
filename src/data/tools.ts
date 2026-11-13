@@ -38,6 +38,25 @@ export const tools: ToolItem[] = [
     tags: ['photo', 'inspection', 'grid', 'pdf'],
   },
   {
+    id: 'layout-story',
+    title: {
+      en: 'Story Layout Editor',
+      id: 'Editor Layout Story',
+    },
+    description: {
+      en: 'Compose and arrange photo collages for Instagram Stories (1080×1920) with customizable templates, safe zones, zoom/pan controls, and instant PNG export.',
+      id: 'Tata dan susun foto kolase untuk Instagram Story (1080×1920) dengan pilihan template, safe zone, kontrol zoom/posisi, dan ekspor PNG instan.',
+    },
+    category: 'photo',
+    icon: 'sparkle',
+    status: 'ready',
+    badge: {
+      en: 'New',
+      id: 'Baru',
+    },
+    tags: ['photo', 'story', 'instagram', 'collage', 'png'],
+  },
+  {
     id: 'pas-foto',
     title: {
       en: 'ID Photo Studio & Background',
