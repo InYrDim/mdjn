@@ -1,0 +1,1179 @@
+---
+import { type Lang } from '../../i18n/utils';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const isId = lang === 'id';
+
+const i18n = {
+  heading: isId ? 'Layout Story' : 'Story Layout',
+  hint: isId
+    ? 'Unggah foto, pilih template, atur posisi & crop, lalu ekspor kolase Story 1080×1920.'
+    : 'Upload photos, select a template, adjust position & crop, then export a 1080×1920 Story.',
+  addPhoto: isId ? 'Tambah foto' : 'Add photo',
+  delete: isId ? 'Hapus' : 'Delete',
+  modeGroupAria: isId ? 'Mode geser' : 'Drag mode',
+  modePos: isId ? 'Posisi' : 'Position',
+  modeSwap: isId ? 'Tukar' : 'Swap',
+  zoom: isId ? 'Zoom' : 'Zoom',
+  align: isId ? 'Letak' : 'Align',
+  gap: isId ? 'Jarak' : 'Gap',
+  margin: isId ? 'Margin' : 'Margin',
+  radius: isId ? 'Sudut' : 'Corner',
+  safeZone: isId ? 'Safe zone' : 'Safe zone',
+  fitSafeZone: isId ? 'Batasi ke safe zone' : 'Fit inside safe zone',
+  downloadPng: isId ? 'Unduh PNG' : 'Download PNG',
+  colorPickerAria: isId ? 'Pilih warna latar' : 'Choose background color',
+  tplAriaPrefix: isId ? 'Tata letak ' : 'Layout ',
+  colorAriaPrefix: isId ? 'Warna latar ' : 'Background color ',
+  canvasAria: isId ? 'Kanvas Story' : 'Story Canvas',
+  msgPreparing: isId ? 'Menyiapkan…' : 'Preparing…',
+  msgFailed: isId ? 'Gagal membuat gambar.' : 'Failed to export image.',
+  msgSaved: isId ? 'Tersimpan.' : 'Saved.',
+  msgDownloaded: isId ? 'Diunduh.' : 'Downloaded.',
+  msgCancelled: isId ? 'Unduhan dibatalkan.' : 'Download cancelled.',
+  msgError: isId ? 'Unduhan gagal. Coba lagi.' : 'Download failed. Try again.',
+  alignTopLeft: isId ? 'Letak atas kiri' : 'Align top left',
+  alignTopCenter: isId ? 'Letak atas tengah' : 'Align top center',
+  alignTopRight: isId ? 'Letak atas kanan' : 'Align top right',
+  alignMiddleLeft: isId ? 'Letak tengah kiri' : 'Align middle left',
+  alignMiddleCenter: isId ? 'Letak tengah' : 'Align center',
+  alignMiddleRight: isId ? 'Letak tengah kanan' : 'Align middle right',
+  alignBottomLeft: isId ? 'Letak bawah kiri' : 'Align bottom left',
+  alignBottomCenter: isId ? 'Letak bawah tengah' : 'Align bottom center',
+  alignBottomRight: isId ? 'Letak bawah kanan' : 'Align bottom right',
+};
+---
+
+<div
+  class="sl-workspace rounded-sm border border-line bg-paper text-ink shadow-xs overflow-hidden"
+  data-lang={lang}
+  data-i18n={JSON.stringify(i18n)}
+>
+  <div class="sl-app">
+    <!-- SIDEBAR CONTROLS -->
+    <aside class="sl-side">
+      <div class="sl-header">
+        <h2 class="sl-title">{i18n.heading}</h2>
+        <p class="sl-hint">{i18n.hint}</p>
+      </div>
+
+      <!-- TEMPLATES -->
+      <section class="sl-sec">
+        <div class="sl-tpls" id="sl-tpls"></div>
+      </section>
+
+      <!-- PHOTO & POSITION CONTROLS -->
+      <section class="sl-sec">
+        <div class="sl-btns">
+          <button type="button" class="sl-btn sl-btn-pri" id="sl-add">{i18n.addPhoto}</button>
+          <button type="button" class="sl-btn" id="sl-del" disabled>{i18n.delete}</button>
+        </div>
+
+        <div class="sl-seg" role="group" aria-label={i18n.modeGroupAria}>
+          <button type="button" data-mode="pos" aria-pressed="true">{i18n.modePos}</button>
+          <button type="button" data-mode="swap" aria-pressed="false">{i18n.modeSwap}</button>
+        </div>
+
+        <div class="sl-row" style="margin-top:14px">
+          <label for="sl-z">{i18n.zoom}</label>
+          <input type="range" id="sl-z" min="1" max="4" step="any" value="1" disabled />
+          <output id="sl-zo">1×</output>
+        </div>
+
+        <div class="sl-row">
+          <label>{i18n.align}</label>
+          <div class="sl-pos" id="sl-pos"></div>
+        </div>
+      </section>
+
+      <!-- SPACING & BACKGROUND -->
+      <section class="sl-sec">
+        <div class="sl-row">
+          <label for="sl-gap">{i18n.gap}</label>
+          <input type="range" id="sl-gap" min="0" max="80" value="24" />
+          <output>24</output>
+        </div>
+        <div class="sl-row">
+          <label for="sl-pad">{i18n.margin}</label>
+          <input type="range" id="sl-pad" min="0" max="120" value="48" />
+          <output>48</output>
+        </div>
+        <div class="sl-row">
+          <label for="sl-rad">{i18n.radius}</label>
+          <input type="range" id="sl-rad" min="0" max="120" value="32" />
+          <output>32</output>
+        </div>
+        <div class="sl-sw" id="sl-sw"></div>
+      </section>
+
+      <!-- SAFE ZONE -->
+      <section class="sl-sec">
+        <label class="sl-chk">
+          <input type="checkbox" id="sl-safe" checked />
+          <span>{i18n.safeZone}</span>
+        </label>
+        <label class="sl-chk">
+          <input type="checkbox" id="sl-fit" />
+          <span>{i18n.fitSafeZone}</span>
+        </label>
+      </section>
+
+      <!-- EXPORT -->
+      <section class="sl-sec sl-export-sec">
+        <button type="button" class="sl-btn sl-btn-pri" id="sl-exp">{i18n.downloadPng}</button>
+        <div id="sl-msg" role="status"></div>
+      </section>
+    </aside>
+
+    <!-- MAIN CANVAS STAGE -->
+    <main class="sl-stage">
+      <canvas id="sl-c" width="1080" height="1920" aria-label={i18n.canvasAria}></canvas>
+    </main>
+  </div>
+
+  <input type="file" id="sl-file" accept="image/*" multiple hidden />
+</div>
+
+<style>
+  .sl-workspace {
+    --sl-bg: var(--color-paper, #fafafa);
+    --sl-panel: var(--color-paper, #ffffff);
+    --sl-stage: color-mix(in srgb, var(--color-line, #e4e4e7) 35%, var(--color-paper, #fafafa));
+    --sl-ink: var(--color-ink, #18181b);
+    --sl-mute: var(--color-muted, #6f6f77);
+    --sl-line: var(--color-line, #e4e4e7);
+    --sl-accent: var(--color-accent, #3056d3);
+    --sl-on-accent: #ffffff;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  [data-theme="dark"] .sl-workspace {
+    --sl-bg: #131316;
+    --sl-panel: #18181b;
+    --sl-stage: #15181d;
+    --sl-ink: #ececee;
+    --sl-mute: #94949c;
+    --sl-line: #2c2c31;
+    --sl-accent: #7d9aff;
+    --sl-on-accent: #0b0f19;
+  }
+
+  .sl-app {
+    display: grid;
+    grid-template-columns: 310px minmax(0, 1fr);
+    min-height: 720px;
+    height: 780px;
+    max-height: 88vh;
+    overflow: hidden;
+    background: var(--sl-bg);
+    color: var(--sl-ink);
+  }
+
+  .sl-side {
+    background: var(--sl-panel);
+    border-right: 1px solid var(--sl-line);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+
+  .sl-header {
+    border-bottom: 1px solid var(--sl-line);
+    padding-bottom: 12px;
+  }
+
+  .sl-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .sl-hint {
+    color: var(--sl-mute);
+    font-size: 13px;
+    margin: 4px 0 0;
+    line-height: 1.4;
+  }
+
+  .sl-sec {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sl-tpls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  :global(.sl-tpl) {
+    aspect-ratio: 9 / 16;
+    border: 1.5px solid var(--sl-line);
+    background: transparent;
+    border-radius: 6px;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--sl-mute);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  :global(.sl-tpl svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  :global(.sl-tpl:hover) {
+    border-color: var(--sl-accent);
+    color: var(--sl-ink);
+  }
+
+  :global(.sl-tpl[aria-pressed="true"]) {
+    border-color: var(--sl-accent);
+    color: var(--sl-accent);
+    box-shadow: 0 0 0 1px var(--sl-accent);
+  }
+
+  .sl-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sl-btn {
+    font: inherit;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--sl-line);
+    background: transparent;
+    color: var(--sl-ink);
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .sl-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sl-line) 40%, transparent);
+  }
+
+  .sl-btn.sl-btn-pri {
+    background: var(--sl-accent);
+    border-color: var(--sl-accent);
+    color: var(--sl-on-accent);
+  }
+
+  .sl-btn.sl-btn-pri:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .sl-btn:focus-visible,
+  :global(.sl-tpl:focus-visible),
+  :global(.sl-sw button:focus-visible),
+  input:focus-visible {
+    outline: 2px solid var(--sl-accent);
+    outline-offset: 2px;
+  }
+
+  .sl-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .sl-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid var(--sl-line);
+    border-radius: 8px;
+    margin-top: 12px;
+    background: color-mix(in srgb, var(--sl-line) 20%, transparent);
+  }
+
+  .sl-seg button {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    border: 0;
+    border-radius: 6px;
+    padding: 6px 4px;
+    background: transparent;
+    color: var(--sl-mute);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  .sl-seg button[aria-pressed="true"] {
+    background: var(--sl-accent);
+    color: var(--sl-on-accent);
+  }
+
+  .sl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .sl-row label {
+    color: var(--sl-mute);
+    min-width: 50px;
+  }
+
+  .sl-row output {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono, monospace);
+    min-width: 32px;
+    text-align: right;
+    color: var(--sl-ink);
+  }
+
+  input[type='range'] {
+    flex: 1;
+    accent-color: var(--sl-accent);
+    cursor: pointer;
+  }
+
+  .sl-pos {
+    display: grid;
+    grid-template-columns: repeat(3, 26px);
+    gap: 4px;
+  }
+
+  :global(.sl-pos button) {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--sl-line);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+  }
+
+  :global(.sl-pos button::after) {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--sl-mute);
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+  }
+
+  :global(.sl-pos button:hover:not(:disabled)) {
+    border-color: var(--sl-accent);
+  }
+
+  :global(.sl-pos button:hover:not(:disabled)::after) {
+    background: var(--sl-accent);
+  }
+
+  :global(.sl-pos button:disabled) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .sl-sw {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  :global(.sl-sw button) {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sl-line);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s, outline-color 0.15s;
+  }
+
+  :global(.sl-sw button:hover) {
+    transform: scale(1.1);
+  }
+
+  :global(.sl-sw button[aria-pressed="true"]) {
+    outline: 2px solid var(--sl-accent);
+    outline-offset: 2px;
+  }
+
+  :global(.sl-sw input[type='color']) {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .sl-chk {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--sl-ink);
+  }
+
+  .sl-chk input {
+    accent-color: var(--sl-accent);
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .sl-export-sec {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--sl-line);
+  }
+
+  #sl-msg {
+    min-height: 20px;
+    color: var(--sl-mute);
+    font-size: 12px;
+    margin-top: 6px;
+    text-align: center;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .sl-stage {
+    background: var(--sl-stage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #sl-c {
+    display: block;
+    aspect-ratio: 9 / 16;
+    height: calc(100% - 10px);
+    max-height: 720px;
+    width: auto;
+    max-width: 100%;
+    border-radius: 6px;
+    touch-action: none;
+    cursor: grab;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 16px 40px rgba(0, 0, 0, 0.16);
+    user-select: none;
+  }
+
+  #sl-c:active {
+    cursor: grabbing;
+  }
+
+  :global(#sl-c.drop) {
+    outline: 3px dashed var(--sl-accent);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 820px) {
+    .sl-app {
+      grid-template-columns: 1fr;
+      height: auto;
+      max-height: none;
+    }
+
+    .sl-stage {
+      order: -1;
+      padding: 16px;
+      min-height: 480px;
+    }
+
+    #sl-c {
+      height: auto;
+      width: min(100%, 340px);
+      max-height: none;
+    }
+
+    .sl-side {
+      max-height: none;
+      border-right: 0;
+      border-top: 1px solid var(--sl-line);
+    }
+  }
+</style>
+
+<script>
+  function setupStoryLayout() {
+    const root = document.querySelector('.sl-workspace');
+    if (!root) return;
+
+    if (root.getAttribute('data-bound') === 'true') return;
+    root.setAttribute('data-bound', 'true');
+
+    const rawI18n = root.getAttribute('data-i18n');
+    const i18n = rawI18n ? JSON.parse(rawI18n) : {};
+
+    const $ = (id: string) => root.querySelector('#sl-' + id) as HTMLElement;
+    const cv = $('c') as HTMLCanvasElement;
+    if (!cv) return;
+    const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
+    const fileEl = $('file') as HTMLInputElement;
+
+    const W = 1080;
+    const H = 1920;
+    const ST = 250;
+    const SB = 340;
+
+    const T = [
+      [[0, 0, 1, 1]],
+      [[0, 0, 1, 0.5], [0, 0.5, 1, 0.5]],
+      [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]],
+      [[0, 0, 1, 1 / 3], [0, 1 / 3, 1, 1 / 3], [0, 2 / 3, 1, 1 / 3]],
+      [[0, 0, 1, 0.5], [0, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]],
+      [[0, 0, 0.5, 0.5], [0.5, 0, 0.5, 0.5], [0, 0.5, 1, 0.5]],
+      [[0, 0, 0.5, 0.5], [0.5, 0, 0.5, 0.5], [0, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]],
+      [[0, 0, 0.5, 1 / 3], [0.5, 0, 0.5, 1 / 3], [0, 1 / 3, 0.5, 1 / 3], [0.5, 1 / 3, 0.5, 1 / 3], [0, 2 / 3, 0.5, 1 / 3], [0.5, 2 / 3, 0.5, 1 / 3]],
+    ];
+
+    const COLORS = ['#ffffff', '#f1ede4', '#15171c', '#cfd8ff', '#d9e8d4'];
+
+    interface SlotData {
+      img: HTMLImageElement | null;
+      z: number;
+      ox: number;
+      oy: number;
+    }
+
+    const st = {
+      tpl: 4,
+      sel: 0,
+      mode: 'pos',
+      bg: '#ffffff',
+      gap: 24,
+      pad: 48,
+      rad: 32,
+      safe: true,
+      fit: false,
+      slots: [] as SlotData[],
+    };
+
+    let target = -1;
+    let drag: { i: number; x: number; y: number; ox: number; oy: number; moved: boolean } | null = null;
+    let swp: { from: number; to: number; x: number; y: number } | null = null;
+
+    function clamp(v: number, a: number, b: number) {
+      return Math.max(a, Math.min(b, v));
+    }
+
+    function slot(i: number): SlotData {
+      return st.slots[i] || (st.slots[i] = { img: null, z: 1, ox: 0, oy: 0 });
+    }
+
+    function rects() {
+      const ay = st.fit ? ST : 0;
+      const ah = st.fit ? H - ST - SB : H;
+      const g = st.gap / 2;
+      const ix = st.pad;
+      const iy = ay + st.pad;
+      const iw = W - 2 * st.pad;
+      const ih = ah - 2 * st.pad;
+      return T[st.tpl].map((r) => ({
+        x: ix + r[0] * (iw + 2 * g),
+        y: iy + r[1] * (ih + 2 * g),
+        w: Math.max(20, r[2] * (iw + 2 * g) - 2 * g),
+        h: Math.max(20, r[3] * (ih + 2 * g) - 2 * g),
+      }));
+    }
+
+    function minZ(s: SlotData, r: { w: number; h: number }) {
+      if (!s.img) return 1;
+      const a = r.w / s.img.naturalWidth;
+      const b = r.h / s.img.naturalHeight;
+      return Math.min(a, b) / Math.max(a, b);
+    }
+
+    function place(s: SlotData, r: { x: number; y: number; w: number; h: number }) {
+      if (!s.img) return [r.x, r.y, r.w, r.h];
+      const iw = s.img.naturalWidth;
+      const ih = s.img.naturalHeight;
+      s.z = Math.max(s.z, minZ(s, r));
+      const b = Math.max(r.w / iw, r.h / ih) * s.z;
+      const dw = iw * b;
+      const dh = ih * b;
+      const mx = Math.abs(dw - r.w) / 2;
+      const my = Math.abs(dh - r.h) / 2;
+      s.ox = clamp(s.ox, -mx, mx);
+      s.oy = clamp(s.oy, -my, my);
+      return [r.x + (r.w - dw) / 2 + s.ox, r.y + (r.h - dh) / 2 + s.oy, dw, dh];
+    }
+
+    function rr(r: { x: number; y: number; w: number; h: number }) {
+      const q = Math.min(st.rad, r.w / 2, r.h / 2);
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(r.x, r.y, r.w, r.h, q);
+      } else {
+        ctx.rect(r.x, r.y, r.w, r.h);
+      }
+    }
+
+    function getAccentColor() {
+      return getComputedStyle(root).getPropertyValue('--sl-accent').trim() || '#3056d3';
+    }
+
+    function draw(ui: boolean) {
+      ctx.fillStyle = st.bg;
+      ctx.fillRect(0, 0, W, H);
+      const rs = rects();
+      const accent = getAccentColor();
+
+      rs.forEach((r, i) => {
+        const s = slot(i);
+        ctx.save();
+        rr(r);
+        ctx.clip();
+        if (s.img) {
+          const p = place(s, r);
+          ctx.drawImage(s.img, p[0], p[1], p[2], p[3]);
+        } else if (ui) {
+          ctx.fillStyle = 'rgba(120, 128, 145, 0.16)';
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+        }
+        ctx.restore();
+
+        if (ui && !s.img) {
+          ctx.fillStyle = 'rgba(90, 98, 115, 0.8)';
+          ctx.font = '300 90px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', r.x + r.w / 2, r.y + r.h / 2);
+        }
+      });
+
+      if (ui) {
+        const r = rs[st.sel];
+        if (r) {
+          rr(r);
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = accent;
+          ctx.stroke();
+        }
+
+        if (swp) {
+          const fr = rs[swp.from];
+          const fs = slot(swp.from);
+          const tr = rs[swp.to];
+          if (tr && swp.to !== swp.from) {
+            rr(tr);
+            ctx.save();
+            ctx.lineWidth = 10;
+            ctx.setLineDash([24, 14]);
+            ctx.strokeStyle = accent;
+            ctx.stroke();
+            ctx.restore();
+          }
+          if (fr && fs.img) {
+            const k = Math.min(0.5, 380 / Math.max(fr.w, fr.h));
+            const g = { x: swp.x - (fr.w * k) / 2, y: swp.y - (fr.h * k) / 2, w: fr.w * k, h: fr.h * k };
+            const pp = place(fs, fr);
+            ctx.save();
+            ctx.globalAlpha = 0.92;
+            rr(g);
+            ctx.clip();
+            ctx.drawImage(fs.img, g.x + (pp[0] - fr.x) * k, g.y + (pp[1] - fr.y) * k, pp[2] * k, pp[3] * k);
+            ctx.restore();
+            rr(g);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+          }
+        }
+
+        if (st.safe) {
+          ctx.fillStyle = 'rgba(20, 22, 28, 0.28)';
+          ctx.fillRect(0, 0, W, ST);
+          ctx.fillRect(0, H - SB, W, SB);
+          ctx.setLineDash([22, 16]);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.beginPath();
+          ctx.moveTo(0, ST);
+          ctx.lineTo(W, ST);
+          ctx.moveTo(0, H - SB);
+          ctx.lineTo(W, H - SB);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+    }
+
+    function render() {
+      draw(true);
+      sync();
+    }
+
+    function sync() {
+      const s = st.slots[st.sel];
+      const has = !!(s && s.img);
+      const zEl = $('z') as HTMLInputElement;
+      const delEl = $('del') as HTMLButtonElement;
+      const zoEl = $('zo');
+      if (zEl) zEl.disabled = !has;
+      if (delEl) delEl.disabled = !has;
+
+      const cr = rects()[st.sel];
+      if (zEl && has && cr) {
+        zEl.min = String(minZ(s, cr));
+        zEl.value = String(s.z);
+      } else if (zEl) {
+        zEl.min = '1';
+        zEl.value = '1';
+      }
+
+      if (zoEl) {
+        zoEl.textContent = (has ? s.z : 1).toFixed(1) + '×';
+      }
+
+      const posBox = $('pos');
+      if (posBox) {
+        Array.from(posBox.children).forEach((b) => {
+          (b as HTMLButtonElement).disabled = !has;
+        });
+      }
+
+      ['gap', 'pad', 'rad'].forEach((k) => {
+        const input = $(k) as HTMLInputElement;
+        if (input && input.nextElementSibling) {
+          input.nextElementSibling.textContent = String(st[k as keyof typeof st]);
+        }
+      });
+    }
+
+    /* Template buttons */
+    const tp = $('tpls');
+    if (tp && !tp.children.length) {
+      T.forEach((t, i) => {
+        const b = document.createElement('button');
+        b.className = 'sl-tpl';
+        b.setAttribute('aria-label', (i18n.tplAriaPrefix || 'Layout ') + (i + 1));
+        b.innerHTML =
+          '<svg viewBox="0 0 36 64">' +
+          t
+            .map(
+              (r) =>
+                '<rect x="' +
+                (r[0] * 36 + 1) +
+                '" y="' +
+                (r[1] * 64 + 1) +
+                '" width="' +
+                (r[2] * 36 - 2) +
+                '" height="' +
+                (r[3] * 64 - 2) +
+                '" rx="2" fill="currentColor" opacity=".55"/>'
+            )
+            .join('') +
+          '</svg>';
+        b.onclick = () => {
+          st.tpl = i;
+          st.sel = Math.min(st.sel, t.length - 1);
+          tpSync();
+          render();
+        };
+        tp.appendChild(b);
+      });
+    }
+
+    function tpSync() {
+      if (!tp) return;
+      Array.from(tp.children).forEach((b, i) => {
+        b.setAttribute('aria-pressed', i === st.tpl ? 'true' : 'false');
+      });
+    }
+
+    /* Swatches */
+    const sw = $('sw');
+    if (sw && !sw.children.length) {
+      COLORS.forEach((c) => {
+        const b = document.createElement('button');
+        b.style.background = c;
+        b.setAttribute('aria-label', (i18n.colorAriaPrefix || 'Background color ') + c);
+        b.onclick = () => {
+          st.bg = c;
+          swSync();
+          render();
+        };
+        sw.appendChild(b);
+      });
+
+      const pick = document.createElement('input');
+      pick.type = 'color';
+      pick.value = '#ffffff';
+      pick.setAttribute('aria-label', i18n.colorPickerAria || 'Choose background color');
+      pick.oninput = () => {
+        st.bg = pick.value;
+        swSync();
+        render();
+      };
+      sw.appendChild(pick);
+    }
+
+    function swSync() {
+      if (!sw) return;
+      Array.from(sw.querySelectorAll('button')).forEach((b, i) => {
+        b.setAttribute('aria-pressed', COLORS[i] === st.bg ? 'true' : 'false');
+      });
+    }
+
+    /* Range controls */
+    ['gap', 'pad', 'rad'].forEach((k) => {
+      const input = $(k) as HTMLInputElement;
+      if (input) {
+        input.oninput = function () {
+          st[k as 'gap' | 'pad' | 'rad'] = +input.value;
+          render();
+        };
+      }
+    });
+
+    const safeEl = $('safe') as HTMLInputElement;
+    if (safeEl) {
+      safeEl.onchange = () => {
+        st.safe = safeEl.checked;
+        render();
+      };
+    }
+
+    const fitEl = $('fit') as HTMLInputElement;
+    if (fitEl) {
+      fitEl.onchange = () => {
+        st.fit = fitEl.checked;
+        render();
+      };
+    }
+
+    const zEl = $('z') as HTMLInputElement;
+    if (zEl) {
+      zEl.oninput = () => {
+        const s = st.slots[st.sel];
+        if (s && s.img) {
+          s.z = +zEl.value;
+          render();
+        }
+      };
+    }
+
+    const delBtn = $('del');
+    if (delBtn) {
+      delBtn.onclick = () => {
+        const s = st.slots[st.sel];
+        if (s) {
+          s.img = null;
+          s.z = 1;
+          s.ox = 0;
+          s.oy = 0;
+          render();
+        }
+      };
+    }
+
+    const addBtn = $('add');
+    if (addBtn) {
+      addBtn.onclick = () => {
+        target = -1;
+        fileEl.click();
+      };
+    }
+
+    /* Files loading */
+    function load(f: File): Promise<HTMLImageElement | null> {
+      return new Promise((res) => {
+        const u = URL.createObjectURL(f);
+        const im = new Image();
+        im.onload = () => {
+          res(im);
+        };
+        im.onerror = () => {
+          res(null);
+        };
+        im.src = u;
+      });
+    }
+
+    function emptyFrom(i: number) {
+      const n = T[st.tpl].length;
+      for (let k = 0; k < n; k++) {
+        const j = (i + k) % n;
+        if (!slot(j).img) return j;
+      }
+      return -1;
+    }
+
+    function fill(files: FileList | File[], start: number) {
+      const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
+      if (!list.length) return;
+      let chain = Promise.resolve();
+      let i = start;
+      list.forEach((f, n) => {
+        chain = chain
+          .then(() => load(f))
+          .then((im) => {
+            if (!im) return;
+            let j = n === 0 && target >= 0 ? target : emptyFrom(i < 0 ? 0 : i);
+            if (j < 0) j = st.sel;
+            const s = slot(j);
+            s.img = im;
+            s.z = 1;
+            s.ox = 0;
+            s.oy = 0;
+            st.sel = j;
+            i = j + 1;
+          });
+      });
+      chain.then(render);
+    }
+
+    if (fileEl) {
+      fileEl.onchange = () => {
+        if (fileEl.files) {
+          fill(fileEl.files, st.sel);
+        }
+        fileEl.value = '';
+      };
+    }
+
+    /* Pointer coordinates & hit testing */
+    function pos(e: PointerEvent | DragEvent | MouseEvent) {
+      const b = cv.getBoundingClientRect();
+      return {
+        x: ((e.clientX - b.left) * W) / b.width,
+        y: ((e.clientY - b.top) * H) / b.height,
+      };
+    }
+
+    function hit(p: { x: number; y: number }) {
+      const rs = rects();
+      for (let i = rs.length - 1; i >= 0; i--) {
+        const r = rs[i];
+        if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return i;
+      }
+      return -1;
+    }
+
+    cv.onpointerdown = (e) => {
+      const p = pos(e);
+      const i = hit(p);
+      if (i < 0) return;
+      st.sel = i;
+      const s = slot(i);
+      drag = { i, x: p.x, y: p.y, ox: s.ox, oy: s.oy, moved: false };
+      cv.setPointerCapture(e.pointerId);
+      render();
+    };
+
+    cv.onpointermove = (e) => {
+      if (!drag) return;
+      const p = pos(e);
+      const s = slot(drag.i);
+      if (Math.abs(p.x - drag.x) + Math.abs(p.y - drag.y) > 8) drag.moved = true;
+      if (!s.img) return;
+
+      if (st.mode === 'swap') {
+        if (!drag.moved) return;
+        const h = hit(p);
+        swp = { from: drag.i, to: h < 0 ? drag.i : h, x: p.x, y: p.y };
+        render();
+      } else {
+        s.ox = drag.ox + (p.x - drag.x);
+        s.oy = drag.oy + (p.y - drag.y);
+        render();
+      }
+    };
+
+    cv.onpointerup = () => {
+      if (drag && !drag.moved && !slot(drag.i).img) {
+        target = drag.i;
+        fileEl.click();
+      }
+      if (swp) {
+        const f = swp.from;
+        const t = swp.to;
+        if (f !== t) {
+          const a = slot(f);
+          const b = slot(t);
+          st.slots[f] = b;
+          st.slots[t] = a;
+          st.sel = t;
+        }
+        swp = null;
+        render();
+      }
+      drag = null;
+    };
+
+    cv.onpointercancel = () => {
+      drag = null;
+      if (swp) {
+        swp = null;
+        render();
+      }
+    };
+
+    /* Mode segment buttons */
+    function modeSync() {
+      root.querySelectorAll('[data-mode]').forEach((b) => {
+        b.setAttribute('aria-pressed', (b as HTMLElement).dataset.mode === st.mode ? 'true' : 'false');
+      });
+      cv.style.cursor = st.mode === 'swap' ? 'move' : 'grab';
+    }
+
+    root.querySelectorAll('[data-mode]').forEach((b) => {
+      (b as HTMLButtonElement).onclick = () => {
+        st.mode = (b as HTMLElement).dataset.mode || 'pos';
+        modeSync();
+      };
+    });
+
+    /* 9-dot alignment grid */
+    const ps = $('pos');
+    if (ps && !ps.children.length) {
+      const alignLabels: Record<string, string> = {
+        '-1,-1': i18n.alignTopLeft || 'Align top left',
+        '0,-1': i18n.alignTopCenter || 'Align top center',
+        '1,-1': i18n.alignTopRight || 'Align top right',
+        '-1,0': i18n.alignMiddleLeft || 'Align middle left',
+        '0,0': i18n.alignMiddleCenter || 'Align center',
+        '1,0': i18n.alignMiddleRight || 'Align middle right',
+        '-1,1': i18n.alignBottomLeft || 'Align bottom left',
+        '0,1': i18n.alignBottomCenter || 'Align bottom center',
+        '1,1': i18n.alignBottomRight || 'Align bottom right',
+      };
+
+      [-1, 0, 1].forEach((v) => {
+        [-1, 0, 1].forEach((h) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.disabled = true;
+          b.style.setProperty('--x', 50 + h * 30 + '%');
+          b.style.setProperty('--y', 50 + v * 30 + '%');
+          b.setAttribute('aria-label', alignLabels[`${h},${v}`] || 'Align');
+          b.onclick = () => align(h, v);
+          ps.appendChild(b);
+        });
+      });
+    }
+
+    function align(h: number, v: number) {
+      const s = st.slots[st.sel];
+      const r = rects()[st.sel];
+      if (!s || !s.img || !r) return;
+      s.z = Math.max(s.z, minZ(s, r));
+      const k = Math.max(r.w / s.img.naturalWidth, r.h / s.img.naturalHeight) * s.z;
+      s.ox = (-h * (s.img.naturalWidth * k - r.w)) / 2;
+      s.oy = (-v * (s.img.naturalHeight * k - r.h)) / 2;
+      render();
+    }
+
+    /* Wheel zoom */
+    cv.addEventListener(
+      'wheel',
+      (e) => {
+        const i = hit(pos(e));
+        const s = i >= 0 && slot(i);
+        if (s && s.img) {
+          e.preventDefault();
+          st.sel = i;
+          s.z = clamp(s.z * (e.deltaY < 0 ? 1.06 : 1 / 1.06), minZ(s, rects()[i]), 4);
+          render();
+        }
+      },
+      { passive: false }
+    );
+
+    /* Drag and drop images */
+    cv.ondragover = (e) => {
+      e.preventDefault();
+      cv.classList.add('drop');
+    };
+    cv.ondragleave = () => {
+      cv.classList.remove('drop');
+    };
+    cv.ondrop = (e) => {
+      e.preventDefault();
+      cv.classList.remove('drop');
+      if (!e.dataTransfer || !e.dataTransfer.files) return;
+      const i = hit(pos(e));
+      target = -1;
+      if (e.dataTransfer.files.length === 1 && i >= 0) {
+        target = i;
+      }
+      fill(e.dataTransfer.files, i >= 0 ? i : st.sel);
+    };
+
+    /* PNG Export */
+    const expBtn = $('exp');
+    if (expBtn) {
+      expBtn.onclick = () => {
+        const msg = $('msg');
+        if (msg) msg.textContent = i18n.msgPreparing || 'Preparing…';
+        draw(false);
+        cv.toBlob((blob) => {
+          render();
+          if (!blob) {
+            if (msg) msg.textContent = i18n.msgFailed || 'Failed to export image.';
+            return;
+          }
+          const name = 'story-1080x1920.png';
+
+          try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            if (msg) msg.textContent = i18n.msgDownloaded || 'Downloaded.';
+          } catch (err: any) {
+            if (msg) {
+              msg.textContent =
+                err && err.code === 'declined'
+                  ? i18n.msgCancelled || 'Download cancelled.'
+                  : i18n.msgError || 'Download failed. Try again.';
+            }
+          }
+        }, 'image/png');
+      };
+    }
+
+    tpSync();
+    swSync();
+    modeSync();
+    render();
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(render);
+    }
+  }
+
+  setupStoryLayout();
+  document.addEventListener('astro:page-load', setupStoryLayout);
+</script>
